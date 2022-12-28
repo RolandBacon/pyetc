@@ -1,10 +1,39 @@
 # Test main
 from pyetc.wst import WST
+from pyetc.etc import asymgauss, vdisp2sigma, sigma2vdisp, moffat
+from mpdaf.obj import Spectrum, WaveCoord
+import numpy as np
 
 
 print('start')
 etc = WST(log='INFO')
-etc.info()
+
+ifs = etc.ifs['blue']
+obs = dict(
+    ndit = 2, # number of exposures
+    dit = 1800, # exposure time in sec of one exposure
+    airmass = 1,
+    seeing = 0.7,
+    beta = 2.8,
+    nradius_spaxels=1,
+)
+etc.set_obs(obs)
+flux = 1e-18 # input Surface brightness in erg/s/cm2
+vdisp = 170 
+skew = 3.0 
+z = 3
+l0 = 1216*(1+z)
+sigma = vdisp2sigma(vdisp, l0)
+fwhm,beta = 0.8,2.8
+ima,sp = etc.get_source(l0, fwhm, beta, sigma, skew, 'blue', 
+                   ima_kfwhm=3, spec_kfwhm=2)
+
+snr = 3.0
+res = etc.flux_from_source(snr, ima, sp, 'darksky', 'blue')
+
+
+print('end')
+#etc.info()
 #obs = dict(
     #ndit = 2, # number of exposures
     #dit = 1800, # exposure time in sec of one exposure
