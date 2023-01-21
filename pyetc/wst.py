@@ -6,7 +6,7 @@ import os, sys
 import numpy as np
 from mpdaf.log import setup_logging
 import astropy.units as u
-from .etc import ETC
+from .etc import ETC, get_data
 
 
 CURDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/WST')
@@ -14,20 +14,26 @@ CURDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/WST')
 class WST(ETC):
     
     def __init__(self, log=logging.INFO):
+        self.refdir = CURDIR
         self.version = __version__
         self.logger = logging.getLogger(__name__)
         setup_logging(__name__, level=log, stream=sys.stdout)        
         # ------ Telescope ---------
         self.name = 'WST'
-        self.tel = dict(area = 100.0) # WST squared meter 
+        self.tel = dict(area = 100.0,  # squared meter of active area
+                        diameter = 11.25 # primary diameter
+                        ) 
         # ------- IFS -----------
         self.ifs = {} 
         self.ifs['channels'] = ['blue','red']
-        self.ifs['skys'] = ['darksky','greysky']
         # IFS blue channel
         chan = 'blue'
-        self.ifs[chan] = dict(desc='Based on BlueMUSE throughput 5/01/2022',
-                              type='IFS',
+        self.ifs[chan] = dict(desc = 'Based on BlueMUSE throughput 5/01/2022',
+                              name = 'ifs',
+                              chan = chan, 
+                              type = 'IFS',
+                              iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
+                              iq_beta = 2.50, # beta PSF of telescope + instrument
                               spaxel_size = 0.25, # spaxel size in arcsec
                               dlbda = 0.60, # Angstroem/pixel
                               lbda1 = 3700, # starting wavelength in Angstroem
@@ -36,11 +42,15 @@ class WST(ETC):
                               ron = 3.0, # readout noise (e-)
                               dcurrent = 3.0, # dark current (e-/pixel/h)                                
                               )
-        _get_data(self.ifs, chan, 'ifs')                
+        get_data(self.ifs, chan, 'ifs', CURDIR)                
         # IFS red channel
         chan = 'red'
         self.ifs[chan] = dict(desc='Based on MUSE throughput 5/01/2022',
+                               name = 'ifs',
+                               chan = chan,                               
                                type='IFS',
+                               iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
+                               iq_beta = 2.50, # beta PSF of telescope + instrument
                                spaxel_size = 0.25, # spaxel size in arcsec
                                dlbda = 0.93, # Angstroem/pixel
                                lbda1 = 5930, # starting wavelength in Angstroem
@@ -49,16 +59,19 @@ class WST(ETC):
                                ron = 3.0, # readout noise (e-)
                                dcurrent = 3.0, # dark current (e-/pixel/h)
                                )
-        _get_data(self.ifs, chan, 'ifs')
+        get_data(self.ifs, chan, 'ifs', CURDIR)
               
         # --------- MOSLR -------------
         self.moslr = {} 
-        self.moslr['channels'] = ['blue','green','red']
-        self.moslr['skys'] = ['darksky','greysky']        
+        self.moslr['channels'] = ['blue','green','red']       
         # MOS-LR blue channel 
         chan = self.moslr['channels'][0]
         self.moslr[chan] = dict(desc='Based on 4MOST LR throughput 5/01/2022',
+                                name = 'moslr',
+                                chan = chan,                                                               
                                 type = 'MOS',
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
                                 aperture = 1.0, # fiber diameter in arcsec
                                 dlbda = 0.44, # Angstroem/pixel
@@ -68,11 +81,15 @@ class WST(ETC):
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
-        _get_data(self.moslr, chan, 'moslr')        
+        get_data(self.moslr, chan, 'moslr', CURDIR)        
         # MOS-LR green channel      
         chan = self.moslr['channels'][1] 
         self.moslr[chan] = dict(desc='Based on 4MOST LR throughput 5/01/2022',
                                 type = 'MOS',
+                                name = 'moslr',
+                                chan = chan,  
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
                                 aperture = 1.0, # fiber diameter in arcsec
                                 dlbda = 0.46, # Angstroem/pixel
@@ -82,11 +99,15 @@ class WST(ETC):
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )     
-        _get_data(self.moslr, chan, 'moslr')  
+        get_data(self.moslr, chan, 'moslr', CURDIR)  
         # MOS-LR red channel      
         chan = self.moslr['channels'][2]
         self.moslr[chan] = dict(desc='Based on 4MOST LR throughput 5/01/2022',
+                                name = 'moslr',
+                                chan = chan,                                                               
                                 type = 'MOS',
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
                                 aperture = 1.0, # fiber diameter in arcsec
                                 spaxel_size = 0.25, # spaxel size in arcsec
                                 dlbda = 0.53, # Angstroem/pixel
@@ -96,73 +117,31 @@ class WST(ETC):
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )        
-        _get_data(self.moslr, chan, 'moslr')           
+        get_data(self.moslr, chan, 'moslr', CURDIR)           
         
     def info(self):
         self.logger.info('%s ETC version: %s', self.name, self.version)
         self.logger.debug('Area: %.1f m2', self.tel['area'])
-        for chan in self.ifs['channels']:
-            self.logger.debug('IFS Channel %s', chan)
-            ifs = self.ifs[chan]
-            self.logger.debug('\t %s', ifs['desc'])
-            self.logger.debug('\t Spaxel size: %.2f arcsec', ifs['spaxel_size'])
-            self.logger.debug('\t Wavelength range %s A step %.2f A LSF %.1f pix', ifs['instrans'].get_range(), ifs['instrans'].get_step(), ifs['lsfpix'])
-            self.logger.debug('\t Instrument transmission peak %.2f at %.0f - min %.2f at %.0f',
-                              ifs['instrans'].data.max(), ifs['instrans'].wave.coord(ifs['instrans'].data.argmax()),
-                              ifs['instrans'].data.min(), ifs['instrans'].wave.coord(ifs['instrans'].data.argmin()))
-            self.logger.debug('\t Detector RON %.1f e- Dark %.1f e-/h', ifs['ron'],ifs['dcurrent'])
-            self.logger.debug('\t Atmospheric transmission table %s', ifs['atmtrans'].filename)
-            self.logger.debug('\t Dark sky emission table %s', ifs['darksky'].filename)
-            self.logger.debug('\t Grey sky emission table %s', ifs['greysky'].filename)
-            self.logger.debug('\t Instrument transmission table %s', ifs['instrans'].filename)          
+        for ins_name in ['ifs', 'moslr']: 
+            insfam = getattr(self, ins_name)
+            for chan in insfam['channels']:
+                ins = insfam[chan]
+                self.logger.debug('%s type %s Channel %s', ins_name.upper(), ins['type'], chan)                
+                self.logger.debug('\t %s', ins['desc'])
+                self.logger.debug('\t Spaxel size: %.2f arcsec Image Quality tel+ins fwhm: %.2f arcsec beta: %.2f ', ins['spaxel_size'], ins['iq_fwhm'], ins['iq_beta'])
+                self.logger.debug('\t Wavelength range %s A step %.2f A LSF %.1f pix', ins['instrans'].get_range(), ins['instrans'].get_step(), ins['lsfpix'])
+                self.logger.debug('\t Instrument transmission peak %.2f at %.0f - min %.2f at %.0f',
+                                  ins['instrans'].data.max(), ins['instrans'].wave.coord(ins['instrans'].data.argmax()),
+                                  ins['instrans'].data.min(), ins['instrans'].wave.coord(ins['instrans'].data.argmin()))
+                self.logger.debug('\t Detector RON %.1f e- Dark %.1f e-/h', ins['ron'],ins['dcurrent'])
+                for sky in ins['sky']:
+                    self.logger.debug('\t Sky moon %s airmass %s table %s', sky['moon'], sky['airmass'], 
+                                      os.path.basename(sky['filename']))
+                self.logger.debug('\t Instrument transmission table %s', os.path.basename(ins['instrans'].filename))          
+                
+           
             
-        for chan in self.moslr['channels']:
-            self.logger.debug('MOS-LR Channel %s', chan)
-            mos = self.moslr[chan]
-            self.logger.debug('\t %s', mos['desc'])
-            self.logger.debug('\t Spaxel size: %.2f arcsec', mos['spaxel_size'])
-            self.logger.debug('\t Fiber aperture: %.1f arcsec', mos['aperture'])
-            self.logger.debug('\t Wavelength range %s A step %.2f A LSF %.1f pix', mos['instrans'].get_range(), mos['instrans'].get_step(), mos['lsfpix'])
-            self.logger.debug('\t Instrument transmission peak %.2f at %.0f - min %.2f at %.0f',
-                              mos['instrans'].data.max(), mos['instrans'].wave.coord(mos['instrans'].data.argmax()),
-                              mos['instrans'].data.min(), mos['instrans'].wave.coord(mos['instrans'].data.argmin()))
-            self.logger.debug('\t Detector RON %.1f e- Dark %.1f e-/h', mos['ron'],mos['dcurrent'])
-            self.logger.debug('\t Atmospheric transmission table %s', mos['atmtrans'].filename)
-            self.logger.debug('\t Dark sky emission table %s', mos['darksky'].filename)
-            self.logger.debug('\t Grey sky emission table %s', mos['greysky'].filename)
-            self.logger.debug('\t Instrument transmission table %s', mos['instrans'].filename)        
-            
-            
-def _get_data(obj, chan, name): 
-    ins = obj[chan]       
-    ins['wave'] = WaveCoord(cdelt=ins['dlbda'], crval=ins['lbda1'], 
-                            shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda']+0.5),
-                            cunit=u.angstrom)
-    filename = f'{name}_skytable_moon05_am1_lsfconv_{chan}.fits'
-    skytab_grey = Table.read(os.path.join(CURDIR,filename))
-    if abs(skytab_grey['lam'][0]*10 - ins['lbda1'])>ins['dlbda'] or \
-       abs(skytab_grey['lam'][-1]*10 - ins['lbda2'])>ins['dlbda'] or \
-       abs(skytab_grey['lam'][1]-skytab_grey['lam'][0])*10 - ins['dlbda']>0.01:
-        raise ValueError(f'Incompatible bounds between {filename} and setup')
-    ins['atmtrans'] = Spectrum(data=skytab_grey['trans'], wave=ins['wave'])
-    ins['atmtrans'].filename = filename
-    ins['greysky'] = Spectrum(data=skytab_grey['flux'], wave=ins['wave'])
-    ins['greysky'].filename = filename
-    filename = f'{name}_skytable_newmoon_am1_lsfconv_{chan}.fits'
-    skytab_dark = Table.read(os.path.join(CURDIR,filename))
-    if abs(skytab_dark['lam'][0]*10 - ins['lbda1'])>ins['dlbda'] or \
-       abs(skytab_dark['lam'][-1]*10 - ins['lbda2'])>ins['dlbda'] or \
-       abs(skytab_dark['lam'][1]-skytab_grey['lam'][0])*10 - ins['dlbda']>0.01: 
-        raise ValueError(f'Incompatible bounds between {filename} and setup')  
-    ins['darksky'] = Spectrum(data=skytab_dark['flux'], wave=ins['wave'])
-    ins['darksky'].filename = filename
-    filename = f'{name}_{chan}_noatm.fits'
-    trans=Table.read(os.path.join(CURDIR,filename))
-    if trans['WAVE'][0]*10 > ins['lbda1'] or \
-       trans['WAVE'][-1]*10 < ins['lbda2'] :
-        raise ValueError(f'Incompatible bounds between {filename} and setup')        
-    ins['instrans'] = Spectrum(data=np.interp(ins['atmtrans'].wave.coord(),trans['WAVE']*10,trans['TOT']), 
-                                            wave=ins['atmtrans'].wave) 
-    ins['instrans'].filename = filename
+
+               
         
         

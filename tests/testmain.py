@@ -1,4 +1,5 @@
 # Test main
+from pyetc.vlt import VLT
 from pyetc.wst import WST
 from pyetc.etc import asymgauss, vdisp2sigma, sigma2vdisp, moffat
 from mpdaf.obj import Spectrum, WaveCoord
@@ -6,8 +7,8 @@ import numpy as np
 
 
 print('start')
-wst = WST(log='INFO')
-wst.info()
+vlt = VLT(log='INFO')
+vlt.info()
 
 
 
