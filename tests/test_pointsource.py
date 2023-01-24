@@ -37,6 +37,7 @@ spec = spec.subspec(lmin=7000,lmax=7300)
 mag = 23
 flux = mag2flux(mag, wave)
 obs = dict(
+    moon = 'darksky',
     seeing = 0.7,
     airmass = 1.0,
     ndit = 2, 
@@ -46,13 +47,22 @@ obs = dict(
     ima_aperture_type = 'circular_adaptative',
 )
 wst.set_obs(obs)
-moon = 'darksky'
 
-frac_ima,size_ima,nspaxels = wst.get_psf_frac_ima(ifs, flux, spec, moon)
+
+frac_ima,size_ima,nspaxels = wst.get_psf_frac_ima(ifs, flux, spec)
 assert size_ima.data[0] > size_ima.data[-1]
 assert frac_ima.data.max() < 1
 assert frac_ima.data.min() > 0
 assert nspaxels[0] > nspaxels[-1]
+assert nspaxels.min() > 0
+
+frac_ima2,size_ima2,nspaxels2 = wst.get_psf_frac_ima(ifs, flux, spec, lbin=10)
+assert size_ima2.data[0] > size_ima2.data[-1]
+assert frac_ima2.data.max() < 1
+assert frac_ima2.data.min() > 0
+assert nspaxels2[0] > nspaxels2[-1]
+assert nspaxels2.min() > 0
+assert_allclose(frac_ima2.data, frac_ima.data, rtol=0.1)
 
 # ------------------
 
@@ -60,6 +70,7 @@ spec = wst.get_spec(mos, dspec)
 spec = spec.subspec(lmin=7000,lmax=7050)
 
 obs = dict(
+    moon = 'darksky',
     seeing = 0.7,
     airmass = 1.0,
     ndit = 2, 
@@ -68,9 +79,9 @@ obs = dict(
     ima_type = 'ps',
 )
 wst.set_obs(obs)
-moon = 'darksky'
 
-frac_ima,size_ima,nspaxels = wst.get_psf_frac_ima(mos, flux, spec, moon)
+
+frac_ima,size_ima,nspaxels = wst.get_psf_frac_ima(mos, flux, spec)
 assert size_ima.data[0] == size_ima.data[-1]
 assert frac_ima.data.max() < 1
 assert frac_ima.data.min() > 0
@@ -85,6 +96,7 @@ spec = spec.subspec(lmin=7000,lmax=7300)
 mag = 23
 flux = mag2flux(mag, wave)
 obs = dict(
+    moon = 'darksky',
     seeing = 0.7,
     airmass = 1.0,
     ndit = 2, 
@@ -94,8 +106,8 @@ obs = dict(
     ima_aperture_type = 'circular_adaptative',
 )
 wst.set_obs(obs)
-moon = 'darksky'
-res = wst.snr_from_source(ifs, flux, None, spec, moon)
+
+res = wst.snr_from_source(ifs, flux, None, spec)
 sp = res['spec']
 
 #------------------
@@ -104,6 +116,7 @@ dspec = dict(type='line', lbda=wave, sigma=2.0, skew=7.0)
 spec = wst.get_spec(ifs, dspec)
 
 obs = dict(
+    moon = 'darksky',
     seeing = 0.7,
     airmass = 1,
     ndit = 2, # number of exposures
@@ -116,14 +129,13 @@ obs = dict(
     ima_kfwhm = 7.4,
 )
 wst.set_obs(obs)
-moon = 'darksky'
 flux = 5.e-18
-kfwhm_spec = wst.optimum_spectral_range(ifs, flux, None, spec, moon)
-kfwhm_ima = wst.optimum_circular_aperture(ifs, flux, None, spec, moon)
-res = wst.snr_from_source(ifs, flux, None, spec, moon)
+kfwhm_spec = wst.optimum_spectral_range(ifs, flux, None, spec)
+kfwhm_ima = wst.optimum_circular_aperture(ifs, flux, None, spec)
+res = wst.snr_from_source(ifs, flux, None, spec)
 
 snr0 = res['aper']['snr']
-res = wst.flux_from_source(ifs, snr0, None, spec, moon)
+res = wst.flux_from_source(ifs, snr0, None, spec)
 aper = res['aper']
 assert_allclose(aper['snr'],snr0,rtol=0.01)
 assert_allclose(aper['flux'],5.e-18,rtol=0.1) # 5.3e-18
@@ -137,6 +149,7 @@ spec = spec.subspec(lmin=7000,lmax=7300)
 mag = 23
 flux = mag2flux(mag, wave)
 obs = dict(
+    moon = 'darksky',
     seeing = 0.7,
     airmass = 1.0,
     ndit = 2, 
@@ -146,8 +159,7 @@ obs = dict(
     ima_aperture_type = 'circular_adaptative',
 )
 wst.set_obs(obs)
-moon = 'darksky'
 snr0 = 5
-res = wst.flux_from_source(ifs, snr0, None, spec, moon, waves=(7000,7300))
+res = wst.flux_from_source(ifs, snr0, None, spec, waves=(7000,7300))
 sp = res['spec']
 assert_allclose(sp['snr'].mean(lmin=7000, lmax=7300)[0], snr0, rtol=0.01)

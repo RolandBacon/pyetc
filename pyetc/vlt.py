@@ -21,7 +21,7 @@ class VLT(ETC):
         # Telescope
         self.name = 'VLT'
         self.tel = dict(area = 48.5,# effective aperture in squared meter 
-                        diam = 8.20, # pirmary diameter in meter
+                        diameter = 8.20, # pirmary diameter in meter
                         )      
         # IFS
         self.ifs = {} # 
@@ -30,9 +30,9 @@ class VLT(ETC):
         # IFS BlueMUSE
         chan = 'blue'
         self.ifs[chan] = dict(desc = 'BlueMUSE 5/01/2022',
-                                name = 'ifs',
-                                chan = chan, 
                                 type='IFS',
+                                iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument                                
                                 spaxel_size = 0.20, # spaxel size in arcsec
                                 dlbda = 0.575, # Angstroem/pixel
                                 lbda1 = 3500, # starting wavelength in Angstroem
@@ -48,9 +48,9 @@ class VLT(ETC):
         # IFS MUSE
         chan = 'red'
         self.ifs[chan] = dict(desc = 'MUSE 5/01/2022',
-                               name = 'ifs',
-                               chan = chan, 
                                type='IFS',
+                               iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
+                               iq_beta = 2.50, # beta PSF of telescope + instrument                               
                                spaxel_size = 0.20, # spaxel size in arcsec
                                dlbda = 1.25, # Angstroem/pixel
                                lbda1 = 4800, # starting wavelength in Angstroem
@@ -67,10 +67,10 @@ class VLT(ETC):
         self.giraffe['channels'] = ['blue']       
         # MOS-LR blue channel 
         chan = self.giraffe['channels'][0]
-        self.giraffe[chan] = dict(desc='Based on ESO ETC 17/01/2023',
-                                  name = 'giraffe',
-                                  chan = chan,                                   
+        self.giraffe[chan] = dict(desc='Based on ESO ETC 17/01/2023',                                  
                                   type = 'MOS',
+                                  iq_fwhm = 0.40, # fwhm PSF of telescope + instrument
+                                  iq_beta = 2.50, # beta PSF of telescope + instrument                                  
                                   spaxel_size = 0.30, # spaxel size in arcsec
                                   aperture = 1.8, # fiber diameter in arcsec
                                   dlbda = 0.12, # Angstroem/pixel
@@ -83,27 +83,6 @@ class VLT(ETC):
         if not skip_dataload:
             get_data(self.giraffe, 'blue', 'giraffe', CURDIR)                    
         
-        
     def info(self):
-        self.logger.info('%s ETC version: %s', self.name, self.version)
-        self.logger.debug('Area: %.1f m2', self.tel['area'])
-        for ins_name in ['ifs', 'giraffe']: 
-            insfam = getattr(self, ins_name)
-            for chan in insfam['channels']:
-                ins = insfam[chan]
-                self.logger.debug('%s type %s Channel %s', ins_name.upper(), ins['type'], chan)
-                
-                self.logger.debug('\t %s', ins['desc'])
-                self.logger.debug('\t Spaxel size: %.2f arcsec', ins['spaxel_size'])
-                self.logger.debug('\t Wavelength range %s A step %.2f A LSF %.1f pix', ins['instrans'].get_range(), ins['instrans'].get_step(), ins['lsfpix'])
-                self.logger.debug('\t Instrument transmission peak %.2f at %.0f - min %.2f at %.0f',
-                                  ins['instrans'].data.max(), ins['instrans'].wave.coord(ins['instrans'].data.argmax()),
-                                  ins['instrans'].data.min(), ins['instrans'].wave.coord(ins['instrans'].data.argmin()))
-                self.logger.debug('\t Detector RON %.1f e- Dark %.1f e-/h', ins['ron'],ins['dcurrent'])
-                for sky in ins['sky']:
-                    self.logger.debug('\t Sky moon %s airmass %s table %s', sky['moon'], sky['airmass'], 
-                                      os.path.basename(sky['filename']))
-                self.logger.debug('\t Instrument transmission table %s', os.path.basename(ins['instrans'].filename))          
-          
-                        
+        self._info(['ifs', 'giraffe'])        
         

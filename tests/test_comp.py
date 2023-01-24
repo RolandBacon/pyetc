@@ -28,6 +28,7 @@ k = trans.wave.pixel(wave, nearest=True)
 tval = trans.data[k]
 assert_almost_equal(tval, 0.323, decimal=2) # 0.33
 obs = dict(
+    moon = 'darksky',
     airmass = 1,  
     ndit = 2, 
     dit = 1800, 
@@ -43,9 +44,8 @@ dspec = dict(type='line', lbda=wave, sigma=2.5/2.355, skew=0)
 spec = etc.get_spec(ifs, dspec, lsfconv=False)
 dima = dict(type='moffat', fwhm=0.7, beta=8.0)
 ima = etc.get_ima(ifs, dima)
-moon = 'darksky'
 flux = 5.e-18
-res = etc.snr_from_source(ifs, flux, ima, spec, moon)
+res = etc.snr_from_source(ifs, flux, ima, spec)
 aper = res['aper']
 assert aper['nb_spaxels'] == 25
 assert aper['nb_spectels'] == 5
@@ -74,6 +74,7 @@ k = trans.wave.pixel(wave, nearest=True)
 tval = trans.data[k]
 assert_almost_equal(tval, 0.242, decimal=2) # OK
 obs = dict(
+    moon = 'darksky',
     airmass = 1.2,  
     ndit = 1, 
     dit = 3600, 
@@ -84,13 +85,11 @@ obs = dict(
 etc.set_obs(obs)
 dspec = dict(type='flatcont', wave=[wave-10,wave+10])
 spec = etc.get_spec(ifs, dspec)
-moon = 'darksky'
 mag = 23
 flux = mag2flux(mag, 6400)
-res = etc.snr_from_source(ifs, flux, None, spec, moon)
+res = etc.snr_from_source(ifs, flux, None, spec)
 sp = res['spec']
 assert sp['nb_spaxels'] == 25
-assert sp['nb_spectels'] == 1
 k = sp['snr'].wave.pixel(wave, nearest=True)
 assert_allclose(sp['nph_sky'].data[k], 2071, rtol=0.1) # 2078 
 assert_allclose(sp['nph_source'].data[k], 340, rtol=0.1) # 346
@@ -111,12 +110,12 @@ ifs = etc.ifs['blue']
 assert ifs['dlbda'] == 0.575
 wave = 4500
 trans = ifs['instrans']
-moon = 'darksky'
 k = trans.wave.pixel(wave, nearest=True)
-emi_sky,abs_sky = etc.get_sky(ifs, moon)
+emi_sky,abs_sky = etc.get_sky(ifs, 'darksky')
 tval = trans.data[k] * abs_sky.data[k]
 assert_allclose(tval, 0.3596, rtol=0.05) # 0.33
 obs = dict(
+    moon = 'darksky',
     airmass = 1,
     seeing = 0.735,
     beta = 2.5,
@@ -134,9 +133,8 @@ dspec = dict(type='line', lbda=wave, sigma=5.2875/2.355, skew=0)
 spec = etc.get_spec(ifs, dspec, lsfconv=False)
 dima = dict(type='moffat', fwhm=0.735, beta=2.5)
 ima = etc.get_ima(ifs, dima)
-moon = 'darksky'
 flux = 1.e-18 
-res = etc.snr_from_source(ifs, flux, ima, spec, moon)
+res = etc.snr_from_source(ifs, flux, ima, spec)
 aper = res['aper']
 assert aper['nb_spaxels'] == 25
 assert aper['nb_spectels'] == 5
@@ -164,6 +162,7 @@ assert_allclose(aper['snr'], 1.86, rtol=0.1) # 1.89
 # SN at ref 8.423
 mos = etc.giraffe['blue']
 obs = dict(
+    moon = 'greysky',
     airmass = 1.0,
     ndit = 1, 
     dit = 1800, 
@@ -184,13 +183,11 @@ dspec = dict(type='flatcont', wave=[wave-10,wave+10])
 spec = etc.get_spec(mos, dspec, oversamp=10)
 dima = dict(type='moffat', fwhm=0.8, beta=2.5, kfwhm=5)
 ima = etc.get_ima(mos, dima, uneven=0)
-moon = 'greysky'
-res = etc.snr_from_source(mos, flux, ima, spec, moon)
+res = etc.snr_from_source(mos, flux, ima, spec)
 aper = res['spec']
-assert aper['nb_spectels'] == 1
 #assert aper['nb_spaxels'] == 29 # pi*6**2/4 = 28.7 get 32
 k = aper['snr'].wave.pixel(wave, nearest=True)
-emi_sky,abs_sky = etc.get_sky(mos, moon)
+emi_sky,abs_sky = etc.get_sky(mos, obs['moon'])
 assert_allclose(mos['instrans'].data[k], 0.0183, 0.1) # 0.0187
 assert_allclose(mos['instrans'].data[k]*abs_sky.data[k], 0.0129, 0.1) # 0.0124
 assert_allclose(1-aper['frac_flux'], 0.21, 0.1) # 0.21
