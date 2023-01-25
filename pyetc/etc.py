@@ -33,6 +33,9 @@ class ETC:
         self.version = __version__
         setup_logging(__name__, level=log, stream=sys.stdout) 
         self.logger = logging.getLogger(__name__)
+        
+    def set_logging(self, log):
+        self.logger.setLevel(log)
                                
     
     def _info(self, ins_names):
@@ -724,7 +727,7 @@ class ETC:
                            )        
         return res     
             
-    def flux_from_source(self, ins, snr, ima, spec, waves=None, flux=None, bracket=(0.1,1000)):
+    def flux_from_source(self, ins, snr, ima, spec, waves=None, flux=None, bracket=(1,100000)):
         """ compute flux for a given snr and source defined
             by flux x image x spectra
             flux in erg/s/cm2
@@ -767,7 +770,7 @@ class ETC:
             snr = np.mean(res['spec']['snr'][krange[0]:krange[1]].data)
         else:
             snr = res['aper']['snr']
-        #print(flux,snr,snr0,snr-snr0)
+        print(f"flux {flux:.2f} snr {snr:.3f} snr0 {snr0:.1f} diff {snr-snr0:.5f}")
         return snr-snr0      
         
     def get_image_quality(self, ins):
