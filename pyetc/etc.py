@@ -727,7 +727,7 @@ class ETC:
                            )        
         return res     
             
-    def flux_from_source(self, ins, snr, ima, spec, waves=None, flux=None, bracket=(1,100000)):
+    def flux_from_source(self, ins, snr, ima, spec, waves=None, flux=None, bracket=(0.1,100000)):
         """ compute flux for a given snr and source defined
             by flux x image x spectra
             flux in erg/s/cm2
@@ -770,7 +770,7 @@ class ETC:
             snr = np.mean(res['spec']['snr'][krange[0]:krange[1]].data)
         else:
             snr = res['aper']['snr']
-        print(f"flux {flux:.2f} snr {snr:.3f} snr0 {snr0:.1f} diff {snr-snr0:.5f}")
+        #print(f"flux {flux:.2f} snr {snr:.3f} snr0 {snr0:.1f} diff {snr-snr0:.5f}")
         return snr-snr0      
         
     def get_image_quality(self, ins):
