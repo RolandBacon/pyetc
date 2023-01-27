@@ -28,17 +28,35 @@ g_nspaxels = None
 
 
 class ETC:
-    
+    """ Generic class for Exposure Time Computation (ETC) """ 
+   
     def __init__(self, log=logging.INFO):
         self.version = __version__
         setup_logging(__name__, level=log, stream=sys.stdout) 
         self.logger = logging.getLogger(__name__)
         
     def set_logging(self, log):
+        """ Change logging value
+
+        Parameters
+        ----------
+        log : str
+             desired log mode "DEBUG","INFO","WARNING","ERROR"
+            
+        """
+        
         self.logger.setLevel(log)
                                
     
     def _info(self, ins_names):
+        """ print detailed information
+
+        Parameters
+        ----------
+        ins_names : list of str
+               list of instrument names (e.g ['ifs','moslr'])
+
+        """        
         self.logger.info('%s ETC version: %s', self.name, self.version)
         self.logger.info('Diameter: %.2f m Area: %.1f m2', self.tel['diameter'],self.tel['area'])
         for ins_name in ins_names: 
@@ -63,22 +81,53 @@ class ETC:
         
               
     def set_obs(self, obs):
-        """ save obs dictionary to self """
+        """save obs dictionary to self
+
+        Parameters
+        ----------
+        obs : dict 
+            dictionary of observation parameters
+
+        """
         if ('ndit' in obs.keys()) and ('dit' in obs.keys()):
             obs['totexp'] = obs['ndit']*obs['dit']/3600.0 # tot integ time in hours
         self.obs = obs
         
     def get_spectral_resolution(self, ins):
-        """ return spectral resolution
-        ins instrument (eg self.ifs['blue'] or self.moslr['red']) 
+        """ return spectral resolving power
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+
+        Returns
+        -------
+        numpy array
+            spectral resoving power (lbda/dlbda)
+
         """
         lsf = ins['lsfpix']*ins['dlbda']
         wave = ins['wave'].coord()
         res = wave/lsf
         return res
-    
+
     def get_sky(self, ins, moon):
-        """ return sky emission and tranmission spectra """
+        """ return sky emission and tranmission spectra
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        moon : str
+            moon observing condition (e.g "darksky")
+
+        Returns
+        -------
+        tuple of MPDAF spectra
+            emission and absorption sky spectra
+
+        """
         airmass = self.obs['airmass']
         for sky in ins['sky']:
             if np.isclose(sky['airmass'], airmass) and (sky['moon'] == moon):
@@ -86,7 +135,25 @@ class ETC:
         raise ValueError(f"moon {moon} airmass {airmass} not found in loaded sky configurations")
     
     def get_spec(self, ins, dspec, oversamp=10, lsfconv=True):
-        """ return spec
+        
+        """ compute source spectrum from the model parameters
+        
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        dspec : dict
+            dictionary of parameters describing the source spectrum
+        oversamp : int
+             oversampling factor (Default value = 10)
+        lsfconv : bool
+             apply LSF convolution (Default value = True)
+        
+        Returns
+        -------
+        MPDAF spectrum
+            resulting source spectrum
+        
         """
         lstep = ins['instrans'].get_step()
         l1,l2 = ins['instrans'].get_start(),ins['instrans'].get_end()
@@ -148,15 +215,56 @@ class ETC:
         return spec
     
     def get_ima(self, ins, dima, oversamp=10, uneven=1):
+        """ compute source image from the model parameters
+        
+         Parameters
+         ----------
+         ins : dict
+             instrument (eg self.ifs['blue'] or self.moslr['red'])
+         dima : dict
+             dictionary of parameters describing the source spectrum
+         oversamp : int
+             oversampling factor (Default value = 10)
+         uneven : int
+              if 1 the size of the image will be uneven (Default value = 1)
+ 
+         Returns
+         -------
+         MPDAF image
+             image of the source
+
+         """
         if dima['type'] == 'moffat':
             kfwhm = dima.get('kfwhm', 3)
             ima = moffat(ins['spaxel_size'], dima['fwhm'], dima['beta'], dima.get('ell',0),
                          kfwhm=kfwhm, oversamp=oversamp, uneven=uneven)
         ima.oversamp = oversamp 
         return ima
-        
-    
+
+
     def truncate_spec_adaptative(self, ins, spec, kfwhm):
+        """ truncate an emission line spectrum as function of the line FWHM
+            the window size is compute as center +/- kfwhm*fwhm 
+
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        spec : MPFAF spectrum
+            source spectrum 
+        kfwhm : float
+            factor relative to the line FWHM, 
+        Returns
+        -------
+        tuple
+             tspec truncated MPDAF spectrum 
+             waves numpy array of corresponding wavelengths (A)
+             nspectels (int) number of spectels kept
+             size (float) wavelength range (A)
+             frac_flux (float) fraction flux kept after truncation 
+
+        """
         l0,l1,l2 = fwhm_asymgauss(spec.wave.coord(), spec.data)
         temp = ins['instrans'].subspec(lmin=spec.get_start(), lmax=spec.get_end())
         rspec = spec.resample(temp.get_step(unit='Angstrom'), start=temp.get_start(unit='Angstrom'), 
@@ -177,6 +285,26 @@ class ETC:
         return tspec,waves,nspectels,size,frac_flux 
     
     def optimum_spectral_range(self, ins, flux, ima, spec):
+        """ compute the optimum window range which maximize the S/N
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        flux : float
+            flux value in erg/s/cm2 (for line), in erg/s/cm2/A (for cont), / arcsec2 (for sb)
+        ima : MPDAF image
+            source image
+        spec : MPDAF spectrum
+            source spectrum
+
+        Returns
+        -------
+        float
+            factor relative to FWHM (kfwhm)
+
+            the kfwhm value is also updated into the obs dictionary
+        """        
         obs = self.obs
         if obs['spec_range_type'] != 'adaptative':
             raise ValueError('obs spec_range_type must be set to adaptative')        
@@ -204,6 +332,27 @@ class ETC:
     
     
     def truncate_spec_fixed(self, ins, spec, nsp):
+        """ truncate the spectrum to a fixed spectral window size
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        spec : MPDAF spectrum
+            source spectrum
+        nsp : int
+            half number of spectels to use (size is 2 * nsp + 1)
+
+        Returns
+        -------
+        tuple
+             tspec truncated MPDAF spectrum 
+             waves numpy array of corresponding wavelengths (A)
+             nspectels (int) number of spectels kept
+             size (float) wavelength range (A)
+             frac_flux (float) fraction flux kept after truncation 
+
+        """        
         l0,l1,l2 = fwhm_asymgauss(spec.wave.coord(), spec.data)
         temp = ins['instrans'].subspec(lmin=spec.get_start(), lmax=spec.get_end())
         rspec = spec.resample(temp.get_step(unit='Angstrom'), start=temp.get_start(unit='Angstrom'), 
@@ -222,6 +371,25 @@ class ETC:
         return tspec,waves,nspectels,size,frac_flux   
         
     def adaptative_circular_aperture(self, ins, ima, kfwhm):
+        """ truncate the image with a window  size relative to the image FWHM
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        ima : MPDAF image
+            source image
+        kfwhm : float
+            factor relative to FWHM to define the truncation aperture
+
+        Returns
+        -------
+        tuple
+             tima truncated MPDAF image 
+             nspaxels (int) number of spaxels
+             size (float) aperture size (diameter, arcsec)
+             frac_flux (float) fraction flux kept after truncation+
+        """        
         peak = ima.peak()
         center = (peak['p'],peak['q'])
         fwhm,_ = ima.fwhm_gauss(center=center, unit_center=None, unit_radius=None)
@@ -230,6 +398,32 @@ class ETC:
         return tima,nspaxels,size_ima,frac_ima
     
     def optimum_circular_aperture(self, ins, flux, ima, spec, bracket=[1,5], lrange=None):
+        """ compute the optimum aperture which maximize the S/N
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        flux : float
+            flux value in erg/s/cm2 (for line), in erg/s/cm2/A (for cont), / arcsec2 (for sb)
+        ima : MPDAF image
+            source image
+        spec : MPDAF spectrum
+            source spectrum
+        bracket : tuple
+             (Default value = [1,5]) :
+            
+        lrange : tuple
+             wavelength range to compute S/N for cont spectrum (Default value = None)
+
+        Returns
+        -------
+        float
+            factor relative to FWHM (kfwhm)
+
+            the kfwhm value is also updated into the obs dictionary
+
+        """
         obs = self.obs
         if obs['ima_aperture_type'] != 'circular_adaptative':
             raise ValueError('obs ima_aperture_type must be set to circular_adaptative')
@@ -258,6 +452,28 @@ class ETC:
         return res.x   
     
     def fixed_circular_aperture(self, ins, ima, radius, cut=1/16):
+        """ truncate the image with a fixed size aperture
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        ima : MPDAF image
+            source image
+        radius : float
+            aperture radius in arcsec
+        cut : float
+            spaxels with flux below cut will not be counted (Default value = 1/16)
+
+        Returns
+        -------
+        tuple
+             tima truncated MPDAF image 
+             nspaxels (int) number of spaxels
+             size (float) aperture size (diameter, arcsec)
+             frac_flux (float) fraction flux kept after truncation
+
+        """        
         peak = ima.peak()
         rad = radius*ima.oversamp/ins['spaxel_size']
         center = (peak['p'],peak['q'])
@@ -279,7 +495,27 @@ class ETC:
         nspaxels = np.count_nonzero(rima.data)
         return rima,nspaxels,size,frac_flux 
     
-    def square_aperture(self, ins, ima, nsp): # WIP is it used ?
+    def square_aperture(self, ins, ima, nsp): 
+        """ truncate an image on a squared aperture
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        ima : MPDAF image
+            source image
+        nsp : int
+            the number of spaxels to use is 2 * nsp +1
+
+        Returns
+        -------
+        tuple
+             tima truncated MPDAF image 
+             nspaxels (int) number of spaxels
+             size (float) aperture size (diameter, arcsec)
+             frac_flux (float) fraction flux kept after truncation
+
+        """        
         rima = ima.rebin(ima.oversamp)
         rima.data *= ima.data.sum()/rima.data.sum()
         nspaxels = (2*nsp+1)**2
@@ -291,9 +527,33 @@ class ETC:
         return tima,nspaxels,size,frac_flux      
         
     def get_psf_frac_ima(self, ins, flux, spec, lrange=None, oversamp=10, lbin=1):
-        """ return frac_ima,nspaxels as function of wavelength 
-        for the corresponding seeing PSF evolution
-        """
+        """ compute the flux fraction evolution with seeing for a point source
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        flux : float
+            flux value in erg/s/cm2 (for line), in erg/s/cm2/A (for cont), / arcsec2 (for sb)
+        ima : MPDAF image
+            source image
+        spec : MPDAF spectrum
+            source spectrum           
+        lrange : tuple
+             wavelength range to compute S/N for cont spectrum (Default value = None)
+        oversamp : int
+             oversampling factor (Default value = 10)
+        lbin : int
+             step in wavelength (Default value = 1)
+
+        Returns
+        -------
+        tuple
+            frac_ima (MPDAF spectrum) fraction of flux as function of wavelength
+            size_ima (MPDAF spectrum) diameter in arcsec of the aperture
+            nspaxels (numpy array of int) corresponding number of spaxels within the aperture
+
+         """
         obs = self.obs
         moon = obs['moon']
         if obs['ima_type'] != 'ps':
@@ -357,18 +617,30 @@ class ETC:
   
 
     def snr_from_source(self, ins, flux, ima, spec, loop=False, debug=True):
-        """ compute snr cube and on an aperture for a source defined
-            by flux x image x spectra
-            if ima is None and obs['ima_type']='sb' flux is in surface brightness
-            if ima is None and obs['ima_type']='ps', point-source is used
-            ins instrument (eg self.ifs['blue'] or self.moslr['red'])
-            flux in erg/s/cm2 (line and resolved)
-            flux in erg/s/cm2/A (cont and resolved)
-            flux in erg/s/cm2/A/arcsec2 (cont and sb)
-            flux in erg/s/cm2/arcsec2 (line and sb)   
-            loop can be None, 0 for the first call, > 0 next call (used only in ps and cont)
-            obs parameters: kfwhm_spec, kfwhm_ima
-        """
+        """ main routine to perform the S/N computation for a given source
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        flux : float
+            flux value in erg/s/cm2 (for line), in erg/s/cm2/A (for cont), / arcsec2 (for sb)
+        ima : MPDAF image
+            source image, can be None for surface brightness source or point source
+        spec : MPDAF spectrum
+            source spectrum          
+        loop : bool
+             set to True for multiple call (used only in ps and cont, Default value = False)
+        debug :
+             if True print some info in logger.debug mode (Default value = True)
+
+        Returns
+        -------
+        dict
+            result dictionary (see documentation)
+
+         """        
+        
         obs = self.obs
         usedobs = {}
         _checkobs(obs, usedobs, ['moon','dit','ndit','airmass','spec_type','ima_type'])
@@ -571,6 +843,24 @@ class ETC:
         return res   
   
     def snr_from_cube(self, ins, cube):
+        """ compute S/N from a data cube
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        cube : MPDAF cube
+            source data cube in flux/voxels
+
+        Returns
+        -------
+        dict
+            result dictionary 
+
+            this routine is called by snr_from_source
+
+        """
+        
         obs = self.obs
         moon = obs['moon']
         # truncate instrans and sky to the wavelength limit of the input cube
@@ -608,6 +898,24 @@ class ETC:
         
     
     def snr_from_ima(self, ins, ima, wave):
+        """ compute S/N from an image
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        ima : MPDAF image
+            source image in flux/spaxels
+        wave : float
+            wavelength in A
+
+        Returns
+        -------
+        dict
+            result dictionary 
+
+            this routine is called by snr_from_source
+        """
         obs = self.obs
         moon = obs['moon']
         # get instrans and sky tvalue at the given wavelength 
@@ -643,8 +951,24 @@ class ETC:
         return res     
     
     def snr_from_spec(self, ins, spec):
-        """ spec input spectrum in erg/s/cm2/spectel
-            return snr spectrum by spaxel"""
+        """compute S/N from a spectrum in flux/spectel
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        spec : MPDAF spectrum
+            source spectrum in flux/spectel
+
+        Returns
+        -------
+        dict
+            result dictionary 
+
+            this routine is called by snr_from_source
+            
+
+        """
         obs = self.obs
         moon = obs['moon']
         # truncate instrans and sky to the wavelength limit of the input cube
@@ -679,8 +1003,27 @@ class ETC:
         return res 
     
     def snr_from_ps_spec(self, ins, spec, frac_ima, nspaxels):
-        """ spec input spectrum in erg/s/cm2/spectel
-            return snr spectrum """
+        """compute S/N for a point source define by a spectrum in flux/spectel
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        spec : MPDAF spectrum
+            point source spectrul in flux/spectel
+        frac_ima : MPDAF spectrum
+            flux fraction recovered in the aperture as function of wavelength
+        nspaxels : numpy array of int
+            corresponding number of spaxels in the aperture
+
+        Returns
+        -------
+        dict
+            result dictionary 
+            
+            this routine is called by snr_from_source
+
+        """
         obs = self.obs
         moon = obs['moon']
         # truncate instrans and sky to the wavelength limit of the input cube
@@ -728,13 +1071,32 @@ class ETC:
         return res     
             
     def flux_from_source(self, ins, snr, ima, spec, waves=None, flux=None, bracket=(0.1,100000)):
-        """ compute flux for a given snr and source defined
-            by flux x image x spectra
-            flux in erg/s/cm2
-            ins instrument (eg self.ifs['blue'] or self.moslr['red'])
-            waves range of wavelength to average the SNR (only for continuum spectrum)
-            flux to compute frac_ima (only ps and cont)
-        """ 
+        """compute the flux needed to achieve a given S/N
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        flux : float
+            flux value in erg/s/cm2 (for line), in erg/s/cm2/A (for cont), / arcsec2 (for sb)
+        ima : MPDAF image
+            source image, can be None for surface brightness source or point source
+        spec : MPDAF spectrum
+            source spectrum                   
+        waves : tuple
+             wavelength range to compute the S/N for cont source (Default value = None)
+        flux :
+             starting value of the flux (Default value = None)
+        bracket : tuple of float
+             interval of flux*1.e-20 for the zero finding routine (Default value = (0.1,100000) :
+            
+
+        Returns
+        -------
+        dict
+            result dictionary (see documentation)
+
+        """
         global g_frac_ima,g_size_ima,g_nspaxels
         if waves is None:
             krange = None
@@ -765,6 +1127,28 @@ class ETC:
         return res 
     
     def fun(self, flux, snr0, ins, ima, spec, krange):
+        """ minimizing function used by flux_from_source
+
+        Parameters
+        ----------
+        flux : float
+            flux value * 1.e-20
+        snr0 : float
+            target S/N
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        ima : MPDAF image
+            source image, can be None for surface brightness source or point source
+        spec : MPDAF spectrum
+            source spectrum
+        krange : tuple of int
+            wavelength range in spectel to compute the S/N
+
+        Returns
+        -------
+        float
+            S/N - target S/N
+        """        
         res = self.snr_from_source(ins, flux*1.e-20, ima, spec, loop=True, debug=False)
         if krange is not None:
             snr = np.mean(res['spec']['snr'][krange[0]:krange[1]].data)
@@ -774,8 +1158,19 @@ class ETC:
         return snr-snr0      
         
     def get_image_quality(self, ins):
-        """ return image quality spectrum for the corrsponding configuration
-        ins instrument """
+        """ compute image quality evolution with wavelength
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+
+        Returns
+        -------
+        numpy array of float
+            image quality 
+
+        """
         obs = self.obs
         iq = ins['instrans'].copy()
         waves = iq.wave.coord()
@@ -783,7 +1178,23 @@ class ETC:
         return iq
         
     def get_image_psf(self, ins, wave, oversamp=10):
-        """ return PSF iamge at the given wavelength """
+        """ compute PSF image
+
+        Parameters
+        ----------
+        ins : dict
+            instrument (eg self.ifs['blue'] or self.moslr['red'])
+        wave : float
+            wavelength in A
+        oversamp : int
+             oversampling factor (Default value = 10)
+
+        Returns
+        -------
+        MPDAF image
+            PSF image
+
+        """
         fwhm = get_seeing_fwhm(self.obs['seeing'], self.obs['airmass'], wave, 
                                self.tel['diameter'], ins['iq_fwhm'])
         ima = moffat(ins['spaxel_size'], fwhm, ins['iq_beta'], oversamp=oversamp) 
@@ -791,6 +1202,20 @@ class ETC:
         return ima
     
     def print_aper(self, res, names):
+        """ pretty print the apertures results for a set of results
+   
+        Parameters
+        ----------
+        res : dict or list of dict
+            result dictionaries deliver by snr_from_source or flux_from_source
+        names : str or list of str
+            name to identify the result
+   
+        Returns
+        -------
+        astropy table
+            table with one column by result
+        """        
         if not isinstance(res, (list)):
             res,names = [res],[names]
         tab = Table(names=['item']+names, dtype=(len(res)+1)*['S20'])
@@ -808,17 +1233,31 @@ class ETC:
 
         
 def _copy_obs(obs, res):
+    """ copy obs dict in res dict """
     for key,val in obs.items():
         res[key] = val
         
 def asymgauss(ftot, l0, sigma, skew, wave):
-    """ compute asymetric gaussian 
-    ftot: total flux
-    l0: peak wavelength in A
-    sigma: sigma in A
-    skew: skew parameter 0=gauss
-    wave: array of wavelength array (A)
-    return: array fo flux
+    """compute asymetric gaussian
+
+    Parameters
+    ----------
+    ftot : float
+        total flux
+    l0 : float
+        peak wavelength in A
+    sigma : float
+        sigma in A
+    skew : float
+        skew parameter (0 for a gaussian)
+    wave : numpy array of float
+        wavelengths in A
+
+    Returns
+    -------
+    numpy array of float
+        asymetric gaussian values
+
     """
     dl = wave - l0
     g = np.exp(-dl**2/(2*sigma**2))
@@ -828,14 +1267,32 @@ def asymgauss(ftot, l0, sigma, skew, wave):
     return h 
 
 def peakwave_asymgauss(lpeak, sigma, skew, dl=0.01):
-    """ return l0 so that the asymgauss(l0) peaked at l0
-    """
+    """ compute the asymetric gaussian wavelength paramater to get the given peak wavelength
+
+    Parameters
+    ----------
+    lpeak : float
+        peak wavelength in A
+    sigma : float
+        sigma in A
+    skew : float
+        skew parameter (0 for a gaussian)        
+    dl : float
+       step in wavelength (A, Default value = 0.01)
+
+    Returns
+    -------
+    float
+        wavelength (A) of the asymetric gaussian
+
+     """
     wave = np.arange(lpeak-5*sigma,lpeak+5*sigma,dl)
     res0 = root_scalar(_funasym, args=(lpeak, sigma, skew, wave), method='brentq',
                           bracket=[lpeak-2*sigma,lpeak+2*sigma], rtol=1.e-3, maxiter=100) 
     return res0.root
 
 def _funasym(l0, lpeak, sigma, skew, wave):
+    """ function used to minimize in peakwave_asymgauss """
     f = asymgauss(1.0, l0, sigma, skew, wave)
     k = f.argmax()
     zero = wave[k] - lpeak
@@ -843,6 +1300,7 @@ def _funasym(l0, lpeak, sigma, skew, wave):
     return zero
 
 def _fun_aper(kfwhm, obj, ins, flux, ima, spec, krange=None):
+    """ function used to minimize in optimum_circular_aperture """
     obj.obs['ima_kfwhm'] = kfwhm
     res = obj.snr_from_source(ins, flux, ima, spec, debug=False)
     if krange is None:
@@ -852,6 +1310,7 @@ def _fun_aper(kfwhm, obj, ins, flux, ima, spec, krange=None):
     return -snr    
 
 def _fun_range(kfwhm, obj, ins, flux, ima, spec):
+    """ function used to minimize in optimum_spectral_range """
     obj.obs['spec_range_kfwhm'] = kfwhm
     res = obj.snr_from_source(ins, flux, ima, spec, debug=False)
     snr = res['aper']['snr']
@@ -859,20 +1318,60 @@ def _fun_range(kfwhm, obj, ins, flux, ima, spec):
     return -snr    
 
 def vdisp2sigma(vdisp, l0):
-    """ vdisp in km/s
-    l0 in A
-    return sigma in A
-    """
+    """compute sigma in A from velocity dispersion in km/s
+
+    Parameters
+    ----------
+    vdisp : float
+        velocity dispersion (km/s)
+    l0 : float
+        wavlenegth (A)
+
+    Returns
+    -------
+    float
+        sigma in A
+
+       """
     return vdisp*l0/C_kms
 
 def sigma2vdisp(sigma, l0):
-    """ sigma in A
-    l0 in A
-    return vdisp in km/s
-    """
+    """compute sigma in A from velocity dispersion in km/s
+
+    Parameters
+    ----------
+    sigma : float
+        sigma in A
+    l0 : float
+        wavelength in A
+
+    Returns
+    -------
+    float
+        velocity dispersion in km/s
+
+     """
     return sigma*C_kms/l0
 
 def fwhm_asymgauss(lbda, flux):
+    """ compute the FWHM of an asymmetric gaussian 
+
+    Parameters
+    ----------
+    lbda : numpy array of float
+        wavelength array in A
+    flux : numpy array of float
+        asymetric gaussian values
+
+    Returns
+    -------
+    tuple
+        l0,l1,l2
+        l0 peak wavelength (A)
+        l1 blue wavelength at FWHM (A)
+        l2 red wavelength at FWHM (A)
+
+    """    
     g = flux/flux.max()    
     kmax = g.argmax()
     l0 = lbda[kmax]
@@ -893,6 +1392,30 @@ def fwhm_asymgauss(lbda, flux):
     return l0,l1,l2
 
 def moffat(samp, fwhm, beta, ell=0, kfwhm=2, oversamp=1, uneven=1):
+    """ compute a 2D Moffat image
+
+    Parameters
+    ----------
+    samp : float
+        image sampling in arcsec
+    fwhm : float
+        FWHM of the MOFFAT (arcsec)
+    beta : float
+        MOFFAT shape parameter (beta > 4 for Gaussian, 1 for Lorentzien)
+    ell : float
+         image ellipticity (Default value = 0)
+    kfwhm : float
+         factor relative to the FWHM to compute the size of the image (Default value = 2)
+    oversamp : int
+         oversampling gfactor (Default value = 1)
+    uneven : int
+         if 1 the image size will have an uneven number of spaxels (Default value = 1)
+
+    Returns
+    -------
+    MPDAF image
+         MOFFAT image
+    """    
     ns = (int((kfwhm*fwhm/samp+1)/2)*2 + uneven)*oversamp
     pixfwhm = oversamp*fwhm/samp
     pixfwhm2 = pixfwhm*(1-ell)
@@ -901,12 +1424,28 @@ def moffat(samp, fwhm, beta, ell=0, kfwhm=2, oversamp=1, uneven=1):
     return ima
 
 def compute_sky(lbda1, lbda2, dlbda, lsf, moon, airmass=1.0):
-    """ return sky table model
-    lbda1,lbda2 range in wavelength A
-    dlbda step in wavelength A
-    lsf convolution in pixels
-    moon (darksky, greysky, brightsky)
-    airmass (1-3)
+    """ compute Paranal sky model from ESO skycalc
+
+    Parameters
+    ----------
+    lbda1 : float
+        starting wavelength (A)
+    lbda2 : float
+        ending wavelength (A)
+    dlbda : float
+        step in wavelength (A)
+    lsf : float
+        LSF size in spectels
+    moon : str
+        moon brightness (eg darksky)
+    airmass : float
+         observation airmass (Default value = 1.0)
+
+    Returns
+    -------
+    astropy table
+        sky table as computed by skycalc
+
     """
     skyModel = SkyModel()
     if moon == 'darksky':
@@ -929,6 +1468,20 @@ def compute_sky(lbda1, lbda2, dlbda, lsf, moon, airmass=1.0):
     return tab
 
 def show_noise(r, ax, legend=False, title='Noise fraction'):
+    """ plot the noise characteristics from the result dictionary
+
+    Parameters
+    ----------
+    r : dict
+          result dictionary that contain the noise results       
+    ax : amtplolib axis
+          axis where to plot
+    legend : bool
+         if True display legend on the figure (Default value = False)
+    title : str
+         title to display (Default value = 'Noise fraction')
+
+    """    
     rtot = r['tot']
     f = (r['sky'].data/rtot.data)**2
     ax.plot(rtot.wave.coord(), f, color='r', label='sky' if legend else None)
@@ -950,21 +1503,21 @@ def show_noise(r, ax, legend=False, title='Noise fraction'):
     ax.set_title(title)
         
 
-
-def get_snr_ima_spec(res):
-    var = res['noise']['tot'].copy()
-    var.data = var.data**2
-    noise_ima = var.sum(axis=0)
-    noise_ima.data = np.sqrt(noise_ima.data)
-    source_ima = res['nph_source'].sum(axis=0)
-    snr_ima = source_ima/noise_ima
-    noise_sp = var.sum(axis=(1,2))
-    noise_sp.data = np.sqrt(noise_sp.data)
-    source_sp = res['nph_source'].sum(axis=(1,2))
-    snr_sp = source_sp/noise_sp
-    return snr_ima,snr_sp
-
 def get_data(obj, chan, name, refdir): 
+    """ retreive instrument data from the associated setup files
+
+    Parameters
+    ----------
+    obj : ETC class 
+        instrument class (e.g. etc.ifs)
+    chan : str
+        channel name (eg 'red')
+    name : str
+        instrument name (eg 'ifs')
+    refdir : str
+        directory path where the setup fits file can be found
+
+    """    
     ins = obj[chan]       
     ins['wave'] = WaveCoord(cdelt=ins['dlbda'], crval=ins['lbda1'], cunit=u.angstrom)
                             #shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda']+1.5),
@@ -1017,6 +1570,26 @@ def get_data(obj, chan, name, refdir):
     return
 
 def update_skytables(logger, obj, moons, airmass, refdir, overwrite=False, debug=False):
+    """ update setup sky files for a change in setup parameters
+
+    Parameters
+    ----------
+    logger : logging instance
+        logger to print progress
+    obj : dict
+        instrument dictionary
+    moons : list of str
+        list of moon sky conditions eg ['darksky']
+    airmass : list of float
+        list of airmass
+    refdir : str
+        path name where to write the reference setup fits file
+    overwrite : bool
+         if True overwrite existing file (Default value = False)
+    debug : bool
+         if True do not try to write(used for unit test, Default value = False)
+
+    """
     for am in airmass:
         for moon in moons:
             tab = compute_sky(obj['lbda1'], obj['lbda2'], obj['dlbda'], 
@@ -1036,12 +1609,26 @@ def update_skytables(logger, obj, moons, airmass, refdir, overwrite=False, debug
                 tab.write(filename, overwrite=overwrite)
             
 def get_seeing_fwhm(seeing, airmass, wave, diam, iq_ins):
-    """ return fwhm in arcsec for a point source
-    seeing at 5000A 
-    airmass of observation
-    wave wavelengths
-    diam telescope diameter
-    iq_ins_iq fwhm image quality of instrument + telescope
+    """ compute FWHM for the Paranal ESO ETC model
+
+    Parameters
+    ----------
+    seeing : float
+        seeing (arcsec) at 5000A
+    airmass : float
+        airmass of the observation
+    wave : numpy array of float
+        wavelengths in A
+    diam : float
+        telescope primary mirror diameter in m
+    iq_ins : float of numpy array
+        image quality of the telescope + instrument
+
+    Returns
+    -------
+    numpy array of float
+        FWHM (arcsec) as function of wavelengths
+
     """
     r0,l0 = 0.188,46 # for VLT (in ETC)
     Fkolb = 1/(1+300*diam/l0)-1
@@ -1051,6 +1638,7 @@ def get_seeing_fwhm(seeing, airmass, wave, diam, iq_ins):
     return iq
 
 def _checkobs(obs, saved, keys):
+    """ check existence and copy keywords from obs to saved """
     for key in keys:
         if key not in obs.keys():
             raise KeyError(f'keyword {key} missing in obs dictionary')
