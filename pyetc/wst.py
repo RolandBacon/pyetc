@@ -49,9 +49,9 @@ class WST(ETC):
                                iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
                                iq_beta = 2.50, # beta PSF of telescope + instrument
                                spaxel_size = 0.25, # spaxel size in arcsec
-                               dlbda = 0.85, # Angstroem/pixel
-                               lbda1 = 6058, # starting wavelength in Angstroem
-                               lbda2 = 9300, # end wavelength in Angstroem
+                               dlbda = 0.97, # Angstroem/pixel
+                               lbda1 = 6000, # starting wavelength in Angstroem
+                               lbda2 = 9600, # end wavelength in Angstroem
                                lsfpix = 2.5, # LSF in spectel
                                ron = 3.0, # readout noise (e-)
                                dcurrent = 3.0, # dark current (e-/pixel/h)
@@ -70,10 +70,10 @@ class WST(ETC):
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
                                 aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.40, # Angstroem/pixel
+                                dlbda = 0.41, # Angstroem/pixel
                                 lbda1 = 3700, # starting wavelength in Angstroem
-                                lbda2 = 6120, # end wavelength in Angstroem
-                                lsfpix = 2.5, # LSF in spectel
+                                lbda2 = 6200, # end wavelength in Angstroem
+                                lsfpix = 4.1, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
@@ -87,10 +87,10 @@ class WST(ETC):
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
                                 aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.54, # Angstroem/pixel
-                                lbda1 = 6073, # starting wavelength in Angstroem
-                                lbda2 = 9300, # end wavelength in Angstroem
-                                lsfpix = 2.5, # LSF in spectel
+                                dlbda = 0.59, # Angstroem/pixel
+                                lbda1 = 6000, # starting wavelength in Angstroem
+                                lbda2 = 9600, # end wavelength in Angstroem
+                                lsfpix = 4.1, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )

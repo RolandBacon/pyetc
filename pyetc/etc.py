@@ -1520,7 +1520,6 @@ def get_data(obj, chan, name, refdir):
     """    
     ins = obj[chan]       
     ins['wave'] = WaveCoord(cdelt=ins['dlbda'], crval=ins['lbda1'], cunit=u.angstrom)
-                            #shape=int((ins['lbda2']-ins['lbda1'])/ins['dlbda']+1.5),
                             
     flist = glob.glob(os.path.join(refdir,f"{name}_{chan}_*sky_*.fits"))
     flist.sort()
@@ -1569,7 +1568,7 @@ def get_data(obj, chan, name, refdir):
     ins['name'] = name
     return
 
-def update_skytables(logger, obj, moons, airmass, refdir, overwrite=False, debug=False):
+def update_skytables(logger, obj, name, chan, moons, airmass, refdir, overwrite=False, debug=False):
     """ update setup sky files for a change in setup parameters
 
     Parameters
@@ -1578,6 +1577,10 @@ def update_skytables(logger, obj, moons, airmass, refdir, overwrite=False, debug
         logger to print progress
     obj : dict
         instrument dictionary
+    name : str
+        instrument name
+    chan: str
+        channel name
     moons : list of str
         list of moon sky conditions eg ['darksky']
     airmass : list of float
@@ -1600,8 +1603,8 @@ def update_skytables(logger, obj, moons, airmass, refdir, overwrite=False, debug
             tab.meta['lbda1'] = obj['lbda1']
             tab.meta['lbda2'] = obj['lbda2']
             tab.meta['dlbda'] = obj['dlbda']
-            name = f"{obj['name']}_{obj['chan']}_{moon}_{am:.1f}.fits"
-            filename = os.path.join(refdir, name)
+            fname = f"{name}_{chan}_{moon}_{am:.1f}.fits"
+            filename = os.path.join(refdir, fname)
             logger.info('Updating file %s', filename)
             if debug:
                 logger.info('Debug mode table not saved to file')
