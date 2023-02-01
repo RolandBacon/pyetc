@@ -28,7 +28,7 @@ class WST(ETC):
         self.ifs['channels'] = ['blue','red']
         # IFS blue channel
         chan = 'blue'
-        self.ifs[chan] = dict(desc = 'Inspired from BlueMUSE throughput 5/01/2022',
+        self.ifs[chan] = dict(desc = 'Inspired from BlueMUSE throughput 5/01/2023',
                               type = 'IFS',
                               iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
                               iq_beta = 2.50, # beta PSF of telescope + instrument
@@ -44,7 +44,7 @@ class WST(ETC):
             get_data(self.ifs, chan, 'ifs', CURDIR)                
         # IFS red channel
         chan = 'red'
-        self.ifs[chan] = dict(desc='Inspired from MUSE throughput 5/01/2022',                            
+        self.ifs[chan] = dict(desc='Inspired from MUSE throughput 5/01/2023',                            
                                type='IFS',
                                iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
                                iq_beta = 2.50, # beta PSF of telescope + instrument
@@ -59,12 +59,12 @@ class WST(ETC):
         if not skip_dataload:
             get_data(self.ifs, chan, 'ifs', CURDIR)
               
-        # --------- MOSLR -------------
+        # # --------- MOSLR-VIS 2 channels 6k CCD -------------
         self.moslr = {} 
         self.moslr['channels'] = ['blue','red']       
         # MOS-LR blue channel 
         chan = self.moslr['channels'][0]
-        self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput 5/01/2022',                                                             
+        self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput 5/01/2023',                                                             
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
@@ -81,7 +81,7 @@ class WST(ETC):
             get_data(self.moslr, chan, 'moslr', CURDIR)        
         # MOS-LR red channel      
         chan = self.moslr['channels'][1] 
-        self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput 5/01/2022',
+        self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput 5/01/2023',
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
@@ -96,10 +96,81 @@ class WST(ETC):
                                 )
         if not skip_dataload:
             get_data(self.moslr, chan, 'moslr', CURDIR)  
-      
+            
+        # --------- MOSLR-VIS+IR 4 channels 4k CCD & GECCD -------------
+        self.moslr2 = {} 
+        self.moslr2['channels'] = ['blue','green','red','ir']       
+        # MOS-LR blue channel 
+        chan = self.moslr2  ['channels'][0]
+        self.moslr2[chan] = dict(desc='Inspired from 4MOST LR throughput 5/01/2023',                                                             
+                                type = 'MOS',
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
+                                spaxel_size = 0.25, # spaxel size in arcsec
+                                aperture = 1.0, # fiber diameter in arcsec
+                                dlbda = 0.375, # Angstroem/pixel
+                                lbda1 = 3700, # starting wavelength in Angstroem
+                                lbda2 = 5200, # end wavelength in Angstroem
+                                lsfpix = 4.1, # LSF in spectel
+                                ron = 3.0, # readout noise (e-)
+                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                )
+        if not skip_dataload:
+            get_data(self.moslr2, chan, 'moslr2', CURDIR)        
+        # MOS-LR green channel      
+        chan = self.moslr2['channels'][1] 
+        self.moslr2[chan] = dict(desc='Inspired from 4MOST LR throughput 5/01/2023',
+                                type = 'MOS',
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
+                                spaxel_size = 0.25, # spaxel size in arcsec
+                                aperture = 1.0, # fiber diameter in arcsec
+                                dlbda = 0.50, # Angstroem/pixel
+                                lbda1 = 5100, # starting wavelength in Angstroem
+                                lbda2 = 7100, # end wavelength in Angstroem
+                                lsfpix = 4.1, # LSF in spectel
+                                ron = 3.0, # readout noise (e-)
+                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                )
+        if not skip_dataload:
+            get_data(self.moslr2, chan, 'moslr2', CURDIR) 
+        # MOS-LR red channel      
+        chan = self.moslr2['channels'][2] 
+        self.moslr2[chan] = dict(desc='Inspired from 4MOST LR throughput 5/01/2023',
+                                type = 'MOS',
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
+                                spaxel_size = 0.25, # spaxel size in arcsec
+                                aperture = 1.0, # fiber diameter in arcsec
+                                dlbda = 0.675, # Angstroem/pixel
+                                lbda1 = 7000, # starting wavelength in Angstroem
+                                lbda2 = 9700, # end wavelength in Angstroem
+                                lsfpix = 4.1, # LSF in spectel
+                                ron = 3.0, # readout noise (e-)
+                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                )
+        if not skip_dataload:
+            get_data(self.moslr2, chan, 'moslr2', CURDIR)                      
+        # MOS-LR ir channel      
+        chan = self.moslr2['channels'][3] 
+        self.moslr2[chan] = dict(desc='First guess 31/01/2023',
+                                type = 'MOS',
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
+                                spaxel_size = 0.25, # spaxel size in arcsec
+                                aperture = 1.0, # fiber diameter in arcsec
+                                dlbda = 0.85, # Angstroem/pixel
+                                lbda1 = 9600, # starting wavelength in Angstroem
+                                lbda2 = 13000, # end wavelength in Angstroem
+                                lsfpix = 4.1, # LSF in spectel
+                                ron = 3.0, # readout noise (e-)
+                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                )
+        if not skip_dataload:
+            get_data(self.moslr2, chan, 'moslr2', CURDIR)            
         
     def info(self):
-        self._info(['ifs', 'moslr'])
+        self._info(['ifs', 'moslr', 'moslr2'])
                 
            
             
