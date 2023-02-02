@@ -11,6 +11,8 @@ from pkg_resources import get_distribution
 # If your documentation needs a minimal Sphinx version, state it here.
 # needs_sphinx = '1.0'
 
+language = 'en'
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
