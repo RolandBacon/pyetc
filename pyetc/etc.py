@@ -1070,7 +1070,7 @@ class ETC:
                            )        
         return res     
             
-    def flux_from_source(self, ins, snr, ima, spec, waves=None, flux=None, bracket=(0.1,100000)):
+    def flux_from_source(self, ins, snr, ima, spec, snrcomp=None, flux=None, bracket=(0.1,100000)):
         """compute the flux needed to achieve a given S/N
 
         Parameters
@@ -1083,8 +1083,8 @@ class ETC:
             source image, can be None for surface brightness source or point source
         spec : MPDAF spectrum
             source spectrum                   
-        waves : tuple
-             wavelength range to compute the S/N for cont source (Default value = None)
+        snrcomp : dict
+             method and parameters to derive the S/N target value from the cont spectrum (Default value = None)
         flux :
              starting value of the flux (Default value = None)
         bracket : tuple of float
@@ -1098,11 +1098,31 @@ class ETC:
 
         """
         global g_frac_ima,g_size_ima,g_nspaxels
-        if waves is None:
+        if (self.obs['spec_type']=='cont'):
+            # decode snrcomp
+            if snrcomp is None:
+                raise ValueError("snrcomp dict is mandatory for cont spec_type")
+            if 'method' not in snrcomp.keys():
+                raise ValueError('method is missing in snrcomp')
+            if snrcomp['method'] == 'mean':
+                if 'waves' not in snrcomp.keys():
+                    raise ValueError('waves is missing in snrcomp')
+                k1,k2 = spec.wave.pixel(snrcomp['waves'], nearest=True)
+                krange = [k1,k2+1,'mean']    
+            elif snrcomp['method'] == 'sum':
+                if 'wave' not in snrcomp.keys():
+                    raise ValueError('wave is missing in snrcomp')
+                k0 = spec.wave.pixel(snrcomp['wave'], nearest=True)
+                if 'npix' not in snrcomp.keys():
+                    raise ValueError('npix is missing in snrcomp')   
+                k1 = int(k0-0.5*snrcomp['npix']+0.5)
+                k2 = k1 + snrcomp['npix']
+                krange = [k1,k2,'sum'] 
+            else:
+                raise ValueError(f"unknown method {snrcomp['method']} in snrcomp")
+        else:  
             krange = None
-        else:
-            krange = spec.wave.pixel(waves, nearest=True)
-            krange[1] += 1            
+           
         # compute frac_ima and nspaxels only once
         if flux is None:
             flux = 1.e-18
@@ -1112,7 +1132,7 @@ class ETC:
         res0 = root_scalar(self.fun, args=(snr, ins, ima, spec, krange), 
                            method='brenth', bracket=bracket, xtol=1.e-3, maxiter=100)   
         flux = res0.root*1.e-20
-        res = self.snr_from_source(ins, flux, ima, spec, waves)
+        res = self.snr_from_source(ins, flux, ima, spec)
         if krange is not None:
             snr1 = np.mean(res['spec']['snr'][krange[0]:krange[1]].data)
             res['spec']['snr_mean'] = snr1
@@ -1151,7 +1171,11 @@ class ETC:
         """        
         res = self.snr_from_source(ins, flux*1.e-20, ima, spec, loop=True, debug=False)
         if krange is not None:
-            snr = np.mean(res['spec']['snr'][krange[0]:krange[1]].data)
+            if krange[2] == 'mean':
+                snr = np.mean(res['spec']['snr'][krange[0]:krange[1]].data)
+            elif krange[2] == 'sum':
+                snr = np.sum(res['spec']['nph_source'].data[krange[0]:krange[1]]) \
+                    / np.sqrt(np.sum(res['spec']['noise']['tot'].data[krange[0]:krange[1]]**2))
         else:
             snr = res['aper']['snr']
         #print(f"flux {flux:.2f} snr {snr:.3f} snr0 {snr0:.1f} diff {snr-snr0:.5f}")

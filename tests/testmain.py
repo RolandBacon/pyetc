@@ -11,9 +11,22 @@ from matplotlib import pyplot as plt
 print('start')
 wst = WST(log='DEBUG')
 
-wst.logger.debug('debug mode to be seen')
-wst.set_logging("INFO")
-wst.logger.debug('debug mode not to be seen')
-wst.logger.info('info mode to be seen')
+mosr = wst.moslr['red']
 
+obs = dict(
+    moon = 'darksky',
+    airmass = 1,
+    seeing = 0.7,
+    ndit = 2,
+    dit = 1800, 
+    spec_type = 'cont',
+    ima_type = 'ps',
+)
+wst.set_obs(obs)
+
+snr = 3 #by A
+wave = 8000
+dspec = dict(type='flatcont', wave=[wave-10,wave+10])
+spec = wst.get_spec(mosr, dspec)
+res = wst.flux_from_source(mosr, snr, None, spec)
 print('end')
