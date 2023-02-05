@@ -58,14 +58,14 @@ def test_cont_ps():
     assert size_ima.data[0] > size_ima.data[-1]
     assert frac_ima.data.max() < 1
     assert frac_ima.data.min() > 0
-    assert nspaxels[0] > nspaxels[-1]
+    assert nspaxels[0] >= nspaxels[-1]
     assert nspaxels.min() > 0
     
     frac_ima2,size_ima2,nspaxels2 = wst.get_psf_frac_ima(ifs, flux, spec, lbin=10)
     assert size_ima2.data[0] > size_ima2.data[-1]
     assert frac_ima2.data.max() < 1
     assert frac_ima2.data.min() > 0
-    assert nspaxels2[0] > nspaxels2[-1]
+    assert nspaxels2[0] >= nspaxels2[-1]
     assert nspaxels2.min() > 0
     assert_allclose(frac_ima2.data, frac_ima.data, rtol=0.1)
 

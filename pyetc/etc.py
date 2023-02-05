@@ -559,7 +559,7 @@ class ETC:
         if obs['ima_type'] != 'ps':
             raise ValueError('get_psf_frac_ima only work in ps ima_type')
         obs['ima_type'] = 'resolved' # switch to resolved for the computation
-        fwhm = self.get_image_quality(ins)
+        fwhm = self.get_image_quality(ins, spec)
         beta = ins['iq_beta']
         # if IFS and adaptative, compute the optimal parameters for the two extreme wavelength
         if (ins['type'] == 'IFS') and (obs['ima_aperture_type'] == 'circular_adaptative'):
@@ -1181,13 +1181,15 @@ class ETC:
         #print(f"flux {flux:.2f} snr {snr:.3f} snr0 {snr0:.1f} diff {snr-snr0:.5f}")
         return snr-snr0      
         
-    def get_image_quality(self, ins):
+    def get_image_quality(self, ins, spec=None):
         """ compute image quality evolution with wavelength
 
         Parameters
         ----------
         ins : dict
             instrument (eg self.ifs['blue'] or self.moslr['red'])
+        spec : MPDAF spectrum
+            use wavelengths from spec, if None use all instrument wavelengths
 
         Returns
         -------
@@ -1196,9 +1198,12 @@ class ETC:
 
         """
         obs = self.obs
-        iq = ins['instrans'].copy()
-        waves = iq.wave.coord()
-        iq.data = get_seeing_fwhm(obs['seeing'], obs['airmass'], waves, self.tel['diameter'], ins['iq_fwhm'])
+        if spec is None:
+            iq = ins['instrans'].copy()
+        else:
+            iq = spec.copy()
+        iq.data = get_seeing_fwhm(obs['seeing'], obs['airmass'], iq.wave.coord(), 
+                                  self.tel['diameter'], ins['iq_fwhm'])
         return iq
         
     def get_image_psf(self, ins, wave, oversamp=10):
