@@ -779,6 +779,7 @@ class ETC:
             sky_noise.data = np.sqrt(nph_sky.data)
             source_noise = nph_source.copy()
             source_noise.data = np.sqrt(nph_source.data) 
+            detnoise = nspaxels*(resc['noise']['ron']**2+resc['noise']['dark']**2) / (np.sum(sky_noise.data**2)+np.sum(source_noise.data**2))            
             res['spec'] = dict(snr=snr,
                                snr_mean=snr.data.mean(),
                                snr_max=snr.data.max(),
@@ -794,6 +795,11 @@ class ETC:
                                             sky=sky_noise,
                                             source=source_noise,
                                             tot=tot_noise,
+                                            frac_detnoise_mean = np.mean(detnoise),
+                                            frac_detnoise_max = np.max(detnoise),
+                                            frac_detnoise_min = np.min(detnoise),
+                                            frac_detnoise_med = np.median(detnoise),
+                                            frac_detnoise_std = np.std(detnoise),
                                             )
                            ) 
         # if spec type is line summed over spectral axis to get aperture values res['aper]
@@ -1053,6 +1059,7 @@ class ETC:
         tot_noise.data = np.sqrt(ron_noise.data**2 + dark_noise.data**2 + sky_noise.data**2 + source_noise.data**2)
         snr = spec.copy()
         snr.data = nph_source.data / tot_noise.data 
+        detnoise = (np.sum(ron_noise.data**2)+np.sum(dark_noise.data**2)) / (np.sum(sky_noise.data**2)+np.sum(source_noise.data**2))    
         res = {}
         res['cube'] = {}
         res['input'] = dict(atm_abs=ins_atm, ins_trans=ins_ins, atm_emi=ins_sky, flux_source=spec)
@@ -1066,7 +1073,18 @@ class ETC:
                            nb_spaxels=nspaxels, 
                            nb_voxels=nb_voxels,
                            nb_spectels=1,                           
-                           noise = dict(ron=ron_noise, dark=dark_noise, sky=sky_noise, source=source_noise, tot=tot_noise),   
+                           noise = dict(
+                               ron=ron_noise, 
+                               dark=dark_noise, 
+                               sky=sky_noise, 
+                               source=source_noise, 
+                               tot=tot_noise,
+                               frac_detnoise_mean = np.mean(detnoise),
+                               frac_detnoise_max = np.max(detnoise),
+                               frac_detnoise_min = np.min(detnoise),
+                               frac_detnoise_med = np.median(detnoise),
+                               frac_detnoise_std = np.std(detnoise),                               
+                               ),   
                            )        
         return res     
             
