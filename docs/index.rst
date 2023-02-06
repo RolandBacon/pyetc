@@ -16,8 +16,3 @@ API
 
 .. automodapi:: pyetc.etc
    :no-inheritance-diagram:
- 
-
-
-
-
