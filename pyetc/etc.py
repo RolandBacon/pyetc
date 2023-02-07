@@ -779,7 +779,7 @@ class ETC:
             sky_noise.data = np.sqrt(nph_sky.data)
             source_noise = nph_source.copy()
             source_noise.data = np.sqrt(nph_source.data) 
-            detnoise = nspaxels*(resc['noise']['ron']**2+resc['noise']['dark']**2) / (np.sum(sky_noise.data**2)+np.sum(source_noise.data**2))            
+            detnoise = nspaxels*(resc['noise']['ron']**2+resc['noise']['dark']**2) / tot_noise.data**2            
             res['spec'] = dict(snr=snr,
                                snr_mean=snr.data.mean(),
                                snr_max=snr.data.max(),
@@ -1059,7 +1059,7 @@ class ETC:
         tot_noise.data = np.sqrt(ron_noise.data**2 + dark_noise.data**2 + sky_noise.data**2 + source_noise.data**2)
         snr = spec.copy()
         snr.data = nph_source.data / tot_noise.data 
-        detnoise = (np.sum(ron_noise.data**2)+np.sum(dark_noise.data**2)) / (np.sum(sky_noise.data**2)+np.sum(source_noise.data**2))    
+        detnoise = (ron_noise.data**2 + dark_noise.data**2) / tot_noise.data**2   
         res = {}
         res['cube'] = {}
         res['input'] = dict(atm_abs=ins_atm, ins_trans=ins_ins, atm_emi=ins_sky, flux_source=spec)

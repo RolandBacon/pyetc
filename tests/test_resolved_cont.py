@@ -89,6 +89,8 @@ def test_snr_from_source():
     res = wst.flux_from_source(ifs, snr0, ima, spec, snrcomp=dict(method='mean', waves=wrange))
     mag = flux2mag(res['spec']['flux'], 0, wave)[0]
     assert_allclose(res['spec']['snr_mean'], snr0, rtol=0.01) 
+    assert res['spec']['noise']['frac_detnoise_med'] < 1
+    assert res['spec']['noise']['frac_detnoise_min'] <  res['spec']['noise']['frac_detnoise_max']
     assert_allclose(mag, 24.0, rtol=0.01) 
     
     wrange = [wave-5,wave+5]
