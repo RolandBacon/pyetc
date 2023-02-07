@@ -782,6 +782,7 @@ class ETC:
             detnoise = nspaxels*(resc['noise']['ron']**2+resc['noise']['dark']**2) / tot_noise.data**2            
             res['spec'] = dict(snr=snr,
                                snr_mean=snr.data.mean(),
+                               snr_med=np.median(snr.data),
                                snr_max=snr.data.max(),
                                snr_min=snr.data.min(),
                                frac_flux=frac_flux,
@@ -795,11 +796,11 @@ class ETC:
                                             sky=sky_noise,
                                             source=source_noise,
                                             tot=tot_noise,
-                                            frac_detnoise_mean = np.mean(detnoise),
-                                            frac_detnoise_max = np.max(detnoise),
-                                            frac_detnoise_min = np.min(detnoise),
-                                            frac_detnoise_med = np.median(detnoise),
-                                            frac_detnoise_std = np.std(detnoise),
+                                            frac_detnoise_mean=np.mean(detnoise),
+                                            frac_detnoise_max=np.max(detnoise),
+                                            frac_detnoise_min=np.min(detnoise),
+                                            frac_detnoise_med=np.median(detnoise),
+                                            frac_detnoise_std=np.std(detnoise),
                                             )
                            ) 
         # if spec type is line summed over spectral axis to get aperture values res['aper]
@@ -1067,6 +1068,7 @@ class ETC:
                            snr_mean=snr.data.mean(),
                            snr_max=snr.data.max(),
                            snr_min=snr.data.min(),
+                           snr_med=np.median(snr.data),
                            nph_source=nph_source,
                            nph_sky=nph_sky,
                            frac_ima=frac_ima, 
@@ -1190,7 +1192,7 @@ class ETC:
         res = self.snr_from_source(ins, flux*1.e-20, ima, spec, loop=True, debug=False)
         if krange is not None:
             if krange[2] == 'mean':
-                snr = np.mean(res['spec']['snr'][krange[0]:krange[1]].data)
+                snr = res['spec']['snr_med']
             elif krange[2] == 'sum':
                 snr = np.sum(res['spec']['nph_source'].data[krange[0]:krange[1]]) \
                     / np.sqrt(np.sum(res['spec']['noise']['tot'].data[krange[0]:krange[1]]**2))

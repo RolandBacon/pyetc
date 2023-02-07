@@ -36,7 +36,7 @@ def test_flatcont():
     snr0 = np.mean(sp['snr'].data[krange[0]:krange[1]])
     res = wst.flux_from_source(ifs, snr0, None, spec, snrcomp=dict(method='mean',waves=wrange))
     mag = flux2mag(res['spec']['flux'], 0, wave)[0]
-    assert_allclose(res['spec']['snr_mean'], snr0, rtol=0.01) 
+    assert_allclose(res['spec']['snr_med'], snr0, rtol=0.01) 
     assert_allclose(mag, 25.0, rtol=0.01) 
 
 def test_error_obs():
@@ -100,7 +100,7 @@ def test_flux_from_source():
     snr0 = np.mean(sp['snr'].data[krange[0]:krange[1]])
     res = wst.flux_from_source(mos, snr0, None, spec, snrcomp=dict(method='mean',waves=wrange))
     mag = flux2mag(res['spec']['flux'], 0, wave)[0]
-    assert_allclose(res['spec']['snr_mean'], snr0, rtol=0.01) 
+    assert_allclose(res['spec']['snr_med'], snr0, rtol=0.01) 
     assert_allclose(mag, 25.0, rtol=0.01) 
     
 

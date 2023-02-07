@@ -179,4 +179,4 @@ def test_flux_from_source():
     snr0 = 5
     res = wst.flux_from_source(ifs, snr0, None, spec, snrcomp=dict(method='mean',waves=(7000,7300)))
     sp = res['spec']
-    assert_allclose(sp['snr'].mean(lmin=7000, lmax=7300)[0], snr0, rtol=0.01)
+    assert_allclose(sp['snr_med'], snr0, rtol=0.01)
