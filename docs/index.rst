@@ -11,8 +11,8 @@ pyetc is a python based exposure time calculator developed for the WST project
    tutorial
    changelog
 
-.. API
-.. ---
+API
+---
 
-.. .. automodapi:: pyetc.etc
-..    :no-inheritance-diagram:
+.. automodapi:: pyetc.etc
+   :no-inheritance-diagram:
