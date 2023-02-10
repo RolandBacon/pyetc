@@ -68,6 +68,7 @@ class ETC:
                 ins = insfam[chan]
                 self.logger.info('%s type %s Channel %s', ins_name.upper(), ins['type'], chan)
                 self.logger.info('\t %s', ins['desc'])
+                self.logger.info('\t version %s', ins['version'])
                 self.logger.info('\t Spaxel size: %.2f arcsec Image Quality tel+ins fwhm: %.2f arcsec beta: %.2f ', ins['spaxel_size'], ins['iq_fwhm'], ins['iq_beta'])
                 if 'aperture' in ins.keys():
                     self.logger.info('\t Fiber aperture: %.1f arcsec', ins['aperture'])
