@@ -168,7 +168,7 @@ class ETC:
             l1 = wave.coord(k)
             k = wave.pixel(dspec['wave'][1], nearest=True)
             l2 = wave.coord(k)
-            npts = np.int((l2 - l1)/dlbda + 1.5)
+            npts = int((l2 - l1)/dlbda + 1.5)
             spec = Spectrum(wave=WaveCoord(cdelt=dlbda, crval=l1), data=np.ones(npts))
             oversamp = 1  # we do not oversamp for flatcont
         elif dspec['type'] == "template":
