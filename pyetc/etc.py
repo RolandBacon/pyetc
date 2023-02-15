@@ -361,9 +361,10 @@ class ETC:
         temp = ins['instrans'].subspec(lmin=spec.get_start(), lmax=spec.get_end())
         rspec = spec.resample(temp.get_step(unit='Angstrom'), start=temp.get_start(unit='Angstrom'),
                             shape=temp.shape[0])
+        rspec.crop() # WIP remove any masked data
         rspec.data *= spec.data.sum()/rspec.data.sum()
         k0 = rspec.wave.pixel(l0, nearest=True)
-        tspec = rspec[k0-nsp:k0+nsp+1]
+        tspec = rspec[max(k0-nsp,0):min(k0+nsp+1,rspec.shape[0])]
         nspectels = 2*nsp+1
         size = nspectels*ins['dlbda']
         frac_flux = tspec.data.sum()
