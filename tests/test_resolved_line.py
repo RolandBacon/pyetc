@@ -32,6 +32,10 @@ def test_get_ima():
     fwhm = res.fwhm[0]*ifs['spaxel_size']/ima.oversamp
     ell = 1 - res.fwhm[1]/res.fwhm[0]
     assert_almost_equal(ell, 0.6, decimal=2)
+    
+    dima = dict(type='sersic', reff=0.7, n=1, ell=0.5)
+    ima = wst.get_ima(ifs, dima, oversamp=1)
+    assert_almost_equal(np.sum(ima.data), 1, decimal=3)
 
 # ------------------------------
 

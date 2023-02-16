@@ -1,9 +1,10 @@
 import logging
 from astropy import constants
 import astropy.units as u
+from astropy.modeling.models import Sersic2D
 from pyetc.version import  __version__
 from mpdaf.obj import Spectrum, WaveCoord, Cube, WCS
-from mpdaf.obj import gauss_image, mag2flux, flux2mag, moffat_image
+from mpdaf.obj import gauss_image, mag2flux, flux2mag, moffat_image, Image
 from astropy.table import Table
 import os, sys
 import numpy as np
@@ -242,6 +243,11 @@ class ETC:
             kfwhm = dima.get('kfwhm', 3)
             ima = moffat(ins['spaxel_size'], dima['fwhm'], dima['beta'], dima.get('ell',0),
                          kfwhm=kfwhm, oversamp=oversamp, uneven=uneven)
+        elif dima['type'] == 'sersic':
+            ima = sersic(ins['spaxel_size'], dima['reff'], dima['n'], dima.get('ell',0),
+                         kreff=dima.get('kreff',3), oversamp=oversamp, uneven=uneven)            
+        else:
+            raise ValueError(f"Unknown image type {dima['type']}")
         ima.oversamp = oversamp
         return ima
 
@@ -1474,6 +1480,43 @@ def moffat(samp, fwhm, beta, ell=0, kfwhm=2, oversamp=1, uneven=1):
     pixfwhm = oversamp*fwhm/samp
     pixfwhm2 = pixfwhm*(1-ell)
     ima = moffat_image(fwhm=(pixfwhm2,pixfwhm), n=beta, shape=(ns,ns), flux=1.0, unit_fwhm=None)
+    ima.data /= ima.data.sum()
+    return ima
+
+def sersic(samp, reff, n, ell=0, kreff=3, oversamp=1, uneven=1):
+    """ compute a 2D Sersic image
+
+    Parameters
+    ----------
+    samp : float
+        image sampling in arcsec
+    reff : float
+        effective radius (arcsec)
+    n : float
+        Sersic index (4 for elliptical, 1 for elliptical disk)
+    ell : float
+         image ellipticity (Default value = 0)
+    kreff : float
+         factor relative to the effective radius to compute the size of the image (Default value = 3)
+    oversamp : int
+         oversampling gfactor (Default value = 1)
+    uneven : int
+         if 1 the image size will have an uneven number of spaxels (Default value = 1)
+
+    Returns
+    -------
+    MPDAF image
+         Sersic image
+    """
+    ns = (int((kreff*reff/samp+1)/2)*2 + uneven)*oversamp
+    pixreff = oversamp*reff/samp          
+    x,y = np.meshgrid(np.arange(ns), np.arange(ns))
+    x0,y0 = ns/2-0.5,ns/2-0.5
+    
+    mod = Sersic2D(amplitude=1, r_eff=pixreff, n=n, x_0=x0, y_0=y0,
+                   ellip=ell, theta=0)
+    data = mod(x, y)            
+    ima = Image(data=data)
     ima.data /= ima.data.sum()
     return ima
 
