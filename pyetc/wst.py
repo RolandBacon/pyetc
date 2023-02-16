@@ -68,6 +68,7 @@ class WST(ETC):
         chan = self.moslr['channels'][0]
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput', 
                                 version = '0.1 10/02/2023',
+                                ref = '',
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
@@ -85,6 +86,7 @@ class WST(ETC):
         # MOS-LR red channel      
         chan = self.moslr['channels'][1] 
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput',
+                                ref='',
                                 version = '0.1 10/02/2023',
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
@@ -101,84 +103,91 @@ class WST(ETC):
         if not skip_dataload:
             get_data(self.moslr, chan, 'moslr', CURDIR)  
             
-        # --------- MOSLR-VIS+IR 4 channels 4k CCD & GECCD -------------
-        self.moslr2 = {} 
-        self.moslr2['channels'] = ['blue','green','red','ir']       
-        # MOS-LR blue channel 
-        chan = self.moslr2  ['channels'][0]
-        self.moslr2[chan] = dict(desc='Inspired from 4MOST LR throughput',  
-                                version = '0.1 10/02/2023',
+        # --------- MOS-HR 4 channels  -------------
+        self.moshr = {} 
+        self.moshr['channels'] = ['U','B','V','I']       
+        # MOS-HR U channel 
+        chan = self.moshr['channels'][0]
+        self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description',  
+                                version = '1.1 13/02/2023',
+                                ref = '',
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.25, # spaxel size in arcsec
-                                aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.375, # Angstroem/pixel
-                                lbda1 = 3700, # starting wavelength in Angstroem
-                                lbda2 = 5200, # end wavelength in Angstroem
-                                lsfpix = 4.1, # LSF in spectel
+                                spaxel_size = 0.217, # spaxel size in arcsec
+                                aperture = 0.93, # fiber diameter in arcsec
+                                dlbda = 0.0217, # Angstroem/pixel
+                                lbda1 = 3800, # starting wavelength in Angstroem
+                                lbda2 = 4000, # end wavelength in Angstroem
+                                lsfpix = 4.5, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moslr2, chan, 'moslr2', CURDIR)        
-        # MOS-LR green channel      
-        chan = self.moslr2['channels'][1] 
-        self.moslr2[chan] = dict(desc='Inspired from 4MOST LR throughput',
-                                version = '0.1 10/02/2023',
+            get_data(self.moshr, chan, 'moshr', CURDIR)  
+            
+        # MOS-HR B channel 
+        chan = self.moshr['channels'][1]
+        self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description',  
+                                version = '1.1 13/02/2023',
+                                ref = '',
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.25, # spaxel size in arcsec
-                                aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.50, # Angstroem/pixel
-                                lbda1 = 5100, # starting wavelength in Angstroem
-                                lbda2 = 7100, # end wavelength in Angstroem
-                                lsfpix = 4.1, # LSF in spectel
+                                spaxel_size = 0.207, # spaxel size in arcsec
+                                aperture = 0.93, # fiber diameter in arcsec
+                                dlbda = 0.029, # Angstroem/pixel
+                                lbda1 = 5067, # starting wavelength in Angstroem
+                                lbda2 = 5332, # end wavelength in Angstroem
+                                lsfpix = 4.5, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moslr2, chan, 'moslr2', CURDIR) 
-        # MOS-LR red channel      
-        chan = self.moslr2['channels'][2] 
-        self.moslr2[chan] = dict(desc='Inspired from 4MOST LR throughput',
-                                version = '0.1 10/02/2023',
+            get_data(self.moshr, chan, 'moshr', CURDIR)                    
+
+        # MOS-HR V channel 
+        chan = self.moshr['channels'][2]
+        self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description',  
+                                version = '1.1 13/02/2023',
+                                ref = '',
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.25, # spaxel size in arcsec
-                                aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.675, # Angstroem/pixel
-                                lbda1 = 7000, # starting wavelength in Angstroem
-                                lbda2 = 9700, # end wavelength in Angstroem
-                                lsfpix = 4.1, # LSF in spectel
+                                spaxel_size = 0.207, # spaxel size in arcsec
+                                aperture = 0.93, # fiber diameter in arcsec
+                                dlbda = 0.0367, # Angstroem/pixel
+                                lbda1 = 6431, # starting wavelength in Angstroem
+                                lbda2 = 6768, # end wavelength in Angstroem
+                                lsfpix = 4.5, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moslr2, chan, 'moslr2', CURDIR)                      
-        # MOS-LR ir channel      
-        chan = self.moslr2['channels'][3] 
-        self.moslr2[chan] = dict(desc='First guess 31/01/2023',
-                                version = '0.1 10/02/2023',
+            get_data(self.moshr, chan, 'moshr', CURDIR)                    
+
+        # MOS-HR I channel 
+        chan = self.moshr['channels'][3]
+        self.moshr[chan] = dict(desc='WST HR spectrometer possible baseline description',  
+                                version = '1.1 13/02/2023',
+                                ref = '',
                                 type = 'MOS',
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
-                                spaxel_size = 0.25, # spaxel size in arcsec
-                                aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.85, # Angstroem/pixel
-                                lbda1 = 9600, # starting wavelength in Angstroem
-                                lbda2 = 13000, # end wavelength in Angstroem
-                                lsfpix = 4.1, # LSF in spectel
+                                spaxel_size = 0.207, # spaxel size in arcsec
+                                aperture = 0.93, # fiber diameter in arcsec
+                                dlbda = 0.0478, # Angstroem/pixel
+                                lbda1 = 8380, # starting wavelength in Angstroem
+                                lbda2 = 8820, # end wavelength in Angstroem
+                                lsfpix = 4.5, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moslr2, chan, 'moslr2', CURDIR)            
+            get_data(self.moshr, chan, 'moshr', CURDIR)            
         
     def info(self):
-        self._info(['ifs', 'moslr', 'moslr2'])
+        self._info(['ifs', 'moslr', 'moshr'])
                 
            
             
