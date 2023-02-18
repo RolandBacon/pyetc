@@ -2,7 +2,7 @@ Changelog
 =========
 0.21 (18/02/2023)
 -----------------
-- Correct telescope aperture to take into account central obscuration
+- Correct telescope aperture to take into account 20% central obscuration
 
 0.2 (16/02/2023)
 -----------------
