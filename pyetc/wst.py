@@ -20,7 +20,7 @@ class WST(ETC):
         setup_logging(__name__, level=log, stream=sys.stdout)        
         # ------ Telescope ---------
         self.name = 'WST'
-        self.tel = dict(area = 100.0,  # squared meter of active area
+        self.tel = dict(area = 88.0,  # squared meter of active area
                         diameter = 11.25 # primary diameter
                         ) 
         # ------- IFS -----------
