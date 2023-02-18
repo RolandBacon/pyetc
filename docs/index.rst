@@ -15,4 +15,3 @@ API
 ---
 
 .. automodapi:: pyetc.etc
-   :members:
