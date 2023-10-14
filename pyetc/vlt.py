@@ -31,6 +31,7 @@ class VLT(ETC):
         chan = 'blue'
         self.ifs[chan] = dict(desc = 'BlueMUSE 5/01/2022',
                                 type='IFS',
+                                version='1.0', 
                                 iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument                                
                                 spaxel_size = 0.20, # spaxel size in arcsec
@@ -49,6 +50,7 @@ class VLT(ETC):
         chan = 'red'
         self.ifs[chan] = dict(desc = 'MUSE 5/01/2022',
                                type='IFS',
+                               version='1.0', 
                                iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
                                iq_beta = 2.50, # beta PSF of telescope + instrument                               
                                spaxel_size = 0.20, # spaxel size in arcsec
@@ -67,7 +69,8 @@ class VLT(ETC):
         self.giraffe['channels'] = ['blue']       
         # MOS-LR blue channel 
         chan = self.giraffe['channels'][0]
-        self.giraffe[chan] = dict(desc='Based on ESO ETC 17/01/2023',                                  
+        self.giraffe[chan] = dict(desc='Based on ESO ETC 17/01/2023',
+                                  version='1.0', 
                                   type = 'MOS',
                                   iq_fwhm = 0.40, # fwhm PSF of telescope + instrument
                                   iq_beta = 2.50, # beta PSF of telescope + instrument                                  

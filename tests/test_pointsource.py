@@ -39,7 +39,7 @@ def test_cont_ps():
     dspec = dict(type='template', name='ref/sun', 
                  wave_center=wave, wave_width=dw)
     spec = wst.get_spec(ifs, dspec)
-    spec = spec.subspec(lmin=7000,lmax=7300)
+    spec = spec.subspec(lmin=6000,lmax=8000)
     mag = 23
     flux = mag2flux(mag, wave)
     obs = dict(

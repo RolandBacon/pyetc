@@ -11,6 +11,9 @@ from .etc import ETC, get_data
 
 CURDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/WST')
 
+MOS_OBSCURATION = 0.11 # telescope obscuration in the telescope MOS path
+IFS_OBSCURATION = 0.20 # telescope obscuration in the telescope IFS path
+
 class WST(ETC):
     
     def __init__(self, log=logging.INFO, skip_dataload=False):
@@ -20,8 +23,8 @@ class WST(ETC):
         setup_logging(__name__, level=log, stream=sys.stdout)        
         # ------ Telescope ---------
         self.name = 'WST'
-        self.tel = dict(area = 93.0,  # squared meter of active area (using ~20% obscuration)
-                        diameter = 11.25 # primary diameter (average value)
+        self.tel = dict(area=100.0,  # squared meter of active area (without obscuration)
+                        diameter=11.25 # primary diameter (average value)
                         ) 
         # ------- IFS -----------
         self.ifs = {} 
@@ -31,6 +34,7 @@ class WST(ETC):
         self.ifs[chan] = dict(desc = 'Inspired from BlueMUSE throughput',
                               version = '0.1 10/02/2023',
                               type = 'IFS',
+                              obscuration=IFS_OBSCURATION, # IFS telescope obscuration,
                               iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
                               iq_beta = 2.50, # beta PSF of telescope + instrument
                               spaxel_size = 0.25, # spaxel size in arcsec
@@ -46,8 +50,9 @@ class WST(ETC):
         # IFS red channel
         chan = 'red'
         self.ifs[chan] = dict(desc='Inspired from MUSE throughput', 
-                               version = '0.1 10/02/2023',
+                               version = '0.2 XX/XX/2023',
                                type='IFS',
+                               obscuration=IFS_OBSCURATION, # IFS telescope obscuration,
                                iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
                                iq_beta = 2.50, # beta PSF of telescope + instrument
                                spaxel_size = 0.25, # spaxel size in arcsec
@@ -67,9 +72,10 @@ class WST(ETC):
         # MOS-LR blue channel 
         chan = self.moslr['channels'][0]
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput', 
-                                version = '0.1 10/02/2023',
+                                version = '0.2 XX/XX/2023',
                                 ref = '',
                                 type = 'MOS',
+                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
@@ -89,6 +95,7 @@ class WST(ETC):
                                 ref='',
                                 version = '0.1 10/02/2023',
                                 type = 'MOS',
+                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
@@ -112,6 +119,7 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
+                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.217, # spaxel size in arcsec
@@ -132,6 +140,7 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
+                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.207, # spaxel size in arcsec
@@ -152,6 +161,7 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
+                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.207, # spaxel size in arcsec
@@ -172,6 +182,7 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
+                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.207, # spaxel size in arcsec

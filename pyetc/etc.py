@@ -70,6 +70,7 @@ class ETC:
                 self.logger.info('%s type %s Channel %s', ins_name.upper(), ins['type'], chan)
                 self.logger.info('\t %s', ins['desc'])
                 self.logger.info('\t version %s', ins['version'])
+                self.logger.info('\t Obscuration %.3f', ins.get('obscuration', 0))
                 self.logger.info('\t Spaxel size: %.2f arcsec Image Quality tel+ins fwhm: %.2f arcsec beta: %.2f ', ins['spaxel_size'], ins['iq_fwhm'], ins['iq_beta'])
                 if 'aperture' in ins.keys():
                     self.logger.info('\t Fiber aperture: %.1f arcsec', ins['aperture'])
@@ -891,13 +892,14 @@ class ETC:
         ins_atm = sky_abs.subspec(lmin=cube.wave.get_start(), lmax=cube.wave.get_end())
         spaxel_area = ins['spaxel_size']**2
         area = spaxel_area
+        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         dl = cube.wave.get_step(unit='Angstrom')
         w = cube.wave.coord() # wavelength in A
-        a = (w*1.e-8/(H_cgs*C_cgs)) * (self.tel['area']*1.e4) * (ins_atm.data)
+        a = (w*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
         Kt =  ins_ins * a
         nph_source = cube.copy()
         nph_source.data = obs['dit'] * obs['ndit'] * Kt[:,np.newaxis,np.newaxis].data * cube.data # number of photons received from the source
-        nph_sky = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * self.tel['area'] * area * (dl/1e4) # nb of photons received from the sky
+        nph_sky = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * tel_eff_area * area * (dl/1e4) # nb of photons received from the sky
         nb_voxels = 1
         ron_noise = np.sqrt(ins['ron']**2*nb_voxels*obs['ndit'])
         dark_noise = np.sqrt(ins['dcurrent']*nb_voxels*obs['ndit']*obs['dit']/3600)
@@ -946,12 +948,13 @@ class ETC:
         spaxel_area = ins['spaxel_size']**2
         area = spaxel_area
         dl = ins['instrans'].wave.get_step(unit='Angstrom')
-        a = (wave*1.e-8/(H_cgs*C_cgs)) * (self.tel['area']*1.e4) * (ins_atm)
+        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
+        a = (wave*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm)
         Kt =  ins_ins * a
         nph_source = ima.copy()
         nph_source.data = obs['dit'] * obs['ndit'] * Kt * ima.data # number of photons received from the source
         nph_sky = ima.copy()
-        nph_sky.data[:,:] = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * self.tel['area'] * area * (dl/1e4) # nb of photons received from the sky
+        nph_sky.data[:,:] = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * tel_eff_area * area * (dl/1e4) # nb of photons received from the sky
         nb_voxels = 1
         ron_noise = np.sqrt(ins['ron']**2*nb_voxels*obs['ndit'])
         dark_noise = np.sqrt(ins['dcurrent']*nb_voxels*obs['ndit']*obs['dit']/3600)
@@ -998,14 +1001,15 @@ class ETC:
         ins_ins = ins['instrans'].subspec(lmin=spec.wave.get_start(), lmax=spec.wave.get_end())
         ins_atm = sky_abs.subspec(lmin=spec.wave.get_start(), lmax=spec.wave.get_end())
         spaxel_area = ins['spaxel_size']**2
+        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         area = spaxel_area
         dl = spec.wave.get_step(unit='Angstrom')
         w = spec.wave.coord() # wavelength in A
-        a = (w*1.e-8/(H_cgs*C_cgs)) * (self.tel['area']*1.e4) * (ins_atm.data)
+        a = (w*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
         Kt =  ins_ins * a
         nph_source = spec.copy()
         nph_source.data = obs['dit'] * obs['ndit'] * Kt.data * spec.data # number of photons received from the source
-        nph_sky = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * self.tel['area'] * area * (dl/1e4) # nb of photons received from the sky
+        nph_sky = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * tel_eff_area * area * (dl/1e4) # nb of photons received from the sky
         nb_voxels = 1
         ron_noise = np.sqrt(ins['ron']**2*nb_voxels*obs['ndit'])
         dark_noise = np.sqrt(ins['dcurrent']*nb_voxels*obs['ndit']*obs['dit']/3600)
@@ -1054,13 +1058,14 @@ class ETC:
         ins_atm = sky_abs.subspec(lmin=spec.wave.get_start(), lmax=spec.wave.get_end())
         spaxel_area = ins['spaxel_size']**2
         area = spaxel_area
+        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         dl = spec.wave.get_step(unit='Angstrom')
         w = spec.wave.coord() # wavelength in A
-        a = (w*1.e-8/(H_cgs*C_cgs)) * (self.tel['area']*1.e4) * (ins_atm.data)
+        a = (w*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
         Kt =  ins_ins * a
         nph_source = spec.copy()
         nph_source.data = obs['dit'] * obs['ndit'] * Kt.data * spec.data * frac_ima.data # number of photons received from the source
-        nph_sky = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * self.tel['area'] * area * (dl/1e4) # nb of photons received from the sky
+        nph_sky = ins_sky * ins_ins * obs['dit'] * obs['ndit'] * tel_eff_area * area * (dl/1e4) # nb of photons received from the sky
         nb_voxels = nspaxels
         ron_noise = spec.copy()
         ron_noise.data = np.sqrt(ins['ron']**2*nb_voxels*obs['ndit'])
