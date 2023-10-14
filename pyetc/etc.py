@@ -403,7 +403,10 @@ class ETC:
         """
         peak = ima.peak()
         center = (peak['p'],peak['q'])
-        fwhm,_ = ima.fwhm_gauss(center=center, unit_center=None, unit_radius=None)
+        if hasattr(ima, "fwhm_gauss"):
+            fwhm,_ = ima.fwhm_gauss(center=center, unit_center=None, unit_radius=None)
+        else:
+            fwhm,_ = ima.fwhm(center=center, unit_center=None, unit_radius=None)
         rad = kfwhm*fwhm*ins['spaxel_size']/ima.oversamp
         tima,nspaxels,size_ima,frac_ima = self.fixed_circular_aperture(ins, ima, rad)
         return tima,nspaxels,size_ima,frac_ima
@@ -1282,7 +1285,7 @@ class ETC:
 
         for key in res[0]['aper'].keys():
             d = dict(item=key)
-            if isinstance(res[0]['aper'][key], (float, np.float)):
+            if isinstance(res[0]['aper'][key], (float, np.float32, np.float64, np.float128)):
                 for n,r in zip(names,res):
                     d[n] = f"{r['aper'][key]:5.4g}"
             else:
