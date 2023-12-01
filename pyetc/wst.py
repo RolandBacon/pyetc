@@ -11,8 +11,9 @@ from .etc import ETC, get_data
 
 CURDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/WST')
 
-MOS_OBSCURATION = 0.11 # telescope obscuration in the telescope MOS path
-IFS_OBSCURATION = 0.20 # telescope obscuration in the telescope IFS path
+# Cass design BusyWeek Oct 2023
+MOS_OBSCURATION = 0.10 # telescope obscuration in the telescope MOS path
+IFS_OBSCURATION = 0.18 # telescope obscuration in the telescope IFS path
 
 class WST(ETC):
     
@@ -23,8 +24,10 @@ class WST(ETC):
         setup_logging(__name__, level=log, stream=sys.stdout)        
         # ------ Telescope ---------
         self.name = 'WST'
-        self.tel = dict(area=100.0,  # squared meter of active area (without obscuration)
-                        diameter=11.25 # primary diameter (average value)
+        self.tel = dict(area=100.0,  # squared meter of primary mirror (without obscuration)
+                        diameter=12.0, # primary diameter 
+                        desc='Cass design',
+                        version='Busyweek Oct 2023'
                         ) 
         # ------- IFS -----------
         self.ifs = {} 

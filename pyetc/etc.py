@@ -61,7 +61,9 @@ class ETC:
                list of instrument names (e.g ['ifs','moslr'])
 
         """
-        self.logger.info('%s ETC version: %s', self.name, self.version)
+        self.logger.info('%s ETC version: %s', self.name, self.version)        
+        if ('desc' in self.tel) and ('version' in self.tel):
+            self.logger.info('Telescope %s version %s', self.tel['desc'],self.tel['version'])
         self.logger.info('Diameter: %.2f m Area: %.1f m2', self.tel['diameter'],self.tel['area'])
         for ins_name in ins_names:
             insfam = getattr(self, ins_name)
