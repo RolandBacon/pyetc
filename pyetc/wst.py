@@ -19,8 +19,10 @@ class WST(ETC):
     def __init__(self, log=logging.INFO, skip_dataload=False):
         self.refdir = CURDIR
         self.version = __version__
+        setup_logging(__name__, level=log, stream=sys.stdout)
         self.logger = logging.getLogger(__name__)
-        setup_logging(__name__, level=log, stream=sys.stdout)        
+        self.logger.propagate = False
+        
         # ------ Telescope ---------
         self.name = 'WST'
         self.tel = dict(area=100.0,  # squared meter of primary mirror (without obscuration)

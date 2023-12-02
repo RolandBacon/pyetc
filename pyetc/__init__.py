@@ -7,4 +7,4 @@ def _setup_logging():
     setup_logging(__name__, level=logging.DEBUG, stream=sys.stdout)
 
 
-_setup_logging()
+#_setup_logging()

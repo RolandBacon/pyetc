@@ -36,8 +36,9 @@ class ETC:
 
     def __init__(self, log=logging.INFO):
         self.version = __version__
-        setup_logging(__name__, level=log, stream=sys.stdout)
+        #setup_logging(__name__, level=log, stream=sys.stdout)
         self.logger = logging.getLogger(__name__)
+        self.logger.propagate = False
 
     def set_logging(self, log):
         """ Change logging value
