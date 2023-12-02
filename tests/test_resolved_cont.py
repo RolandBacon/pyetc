@@ -19,11 +19,11 @@ def test_spec_cont():
     # ---------------
     wave = 7500
     dw = 500
-    dspec = dict(type='template', name='kc96/starb1', 
+    dspec = dict(type='template', name='kc96/starb1', redshift=0.5, 
                  wave_center=wave, wave_width=dw)
     spec = wst.get_spec(ifs, dspec)
     vmean = spec.mean(lmin=wave-dw/2,lmax=wave+dw/2)[0]
-    assert_allclose(vmean, 1.0, rtol=1.e-3)
+    assert_allclose(vmean, 1.0, rtol=1.e-2)
     spec2 = wst.get_spec(wst.ifs['blue'], dspec)
 
 # --------------

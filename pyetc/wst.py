@@ -8,7 +8,6 @@ from mpdaf.log import setup_logging
 import astropy.units as u
 from .etc import ETC, get_data
 
-
 CURDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/WST')
 
 # Cass design BusyWeek Oct 2023
@@ -25,13 +24,13 @@ class WST(ETC):
         # ------ Telescope ---------
         self.name = 'WST'
         self.tel = dict(area=100.0,  # squared meter of primary mirror (without obscuration)
-                        diameter=12.0, # primary diameter 
+                        diameter=12.0, # primary diameter
                         desc='Cass design',
                         version='Busyweek Oct 2023'
-                        ) 
+                        )        
         # ------- IFS -----------
         self.ifs = {} 
-        self.ifs['channels'] = ['blue','red']
+        self.ifs['channels'] = ['blue', 'red']
         # IFS blue channel
         chan = 'blue'
         self.ifs[chan] = dict(desc = 'Inspired from BlueMUSE throughput',
@@ -50,10 +49,11 @@ class WST(ETC):
                               )
         if not skip_dataload:
             get_data(self.ifs, chan, 'ifs', CURDIR)                
+
         # IFS red channel
         chan = 'red'
         self.ifs[chan] = dict(desc='Inspired from MUSE throughput', 
-                               version = '0.2 XX/XX/2023',
+                               version = '0.1 10/02/2023',
                                type='IFS',
                                obscuration=IFS_OBSCURATION, # IFS telescope obscuration,
                                iq_fwhm = 0.10, # fwhm PSF of telescope + instrument
@@ -69,14 +69,14 @@ class WST(ETC):
         if not skip_dataload:
             get_data(self.ifs, chan, 'ifs', CURDIR)
               
-        # # --------- MOSLR-VIS 2 channels 6k CCD -------------
+        # # --------- MOSLR-VIS 3 channels 6k CCD -------------
         self.moslr = {} 
-        self.moslr['channels'] = ['blue','red']       
+        self.moslr['channels'] = ['blue','orange', 'red']       
         # MOS-LR blue channel 
         chan = self.moslr['channels'][0]
-        self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput', 
-                                version = '0.2 XX/XX/2023',
-                                ref = '',
+        self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput',
+                                version = '0.2 30/11/2023',
+                                ref = 'throughput version revised by Jarle & Roelof',
                                 type = 'MOS',
                                 obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
@@ -84,34 +84,58 @@ class WST(ETC):
                                 spaxel_size = 0.25, # spaxel size in arcsec
                                 aperture = 1.0, # fiber diameter in arcsec
                                 dlbda = 0.41, # Angstroem/pixel
-                                lbda1 = 3700, # starting wavelength in Angstroem
-                                lbda2 = 6200, # end wavelength in Angstroem
+                                lbda1 = 3700, # starting wavelength in Angstroem - we hope to go to 3500
+                                lbda2 = 5350, # end wavelength in Angstroem
                                 lsfpix = 4.1, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
-            get_data(self.moslr, chan, 'moslr', CURDIR)        
-        # MOS-LR red channel      
+            get_data(self.moslr, chan, 'moslr', CURDIR)
+            
+        # MOS-LR orange channel      
         chan = self.moslr['channels'][1] 
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput',
-                                ref='',
-                                version = '0.1 10/02/2023',
+                                version = '0.2 30/11/2023',
+                                ref = 'throughput version revised by Jarle & Roelof',
                                 type = 'MOS',
                                 obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
                                 aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.59, # Angstroem/pixel
-                                lbda1 = 6000, # starting wavelength in Angstroem
-                                lbda2 = 9600, # end wavelength in Angstroem
+                                dlbda = 0.55, # Angstroem/pixel
+                                lbda1 = 5150, # starting wavelength in Angstroem
+                                lbda2 = 7400, # end wavelength in Angstroem
                                 lsfpix = 4.1, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
         if not skip_dataload:
             get_data(self.moslr, chan, 'moslr', CURDIR)  
+
+
+        # MOS-LR red channel      
+        chan = self.moslr['channels'][2] 
+        self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput',
+                                version = '0.2 30/11/2023',
+                                ref = 'throughput version revised by Jarle & Roelof',
+                                type = 'MOS',
+                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
+                                iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
+                                iq_beta = 2.50, # beta PSF of telescope + instrument
+                                spaxel_size = 0.25, # spaxel size in arcsec
+                                aperture = 1.0, # fiber diameter in arcsec
+                                dlbda = 0.61, # Angstroem/pixel
+                                lbda1 = 7200, # starting wavelength in Angstroem
+                                lbda2 = 9700, # end wavelength in Angstroem
+                                lsfpix = 4.1, # LSF in spectel
+                                ron = 3.0, # readout noise (e-)
+                                dcurrent = 3.0, # dark current (e-/pixel/h)                                
+                                )
+        if not skip_dataload:
+            get_data(self.moslr, chan, 'moslr', CURDIR)  
+
             
         # --------- MOS-HR 4 channels  -------------
         self.moshr = {} 
@@ -122,7 +146,6 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
-                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.217, # spaxel size in arcsec
@@ -143,7 +166,6 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
-                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.207, # spaxel size in arcsec
@@ -164,7 +186,6 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
-                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.207, # spaxel size in arcsec
@@ -185,7 +206,6 @@ class WST(ETC):
                                 version = '1.1 13/02/2023',
                                 ref = '',
                                 type = 'MOS',
-                                obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.207, # spaxel size in arcsec
@@ -200,8 +220,11 @@ class WST(ETC):
         if not skip_dataload:
             get_data(self.moshr, chan, 'moshr', CURDIR)            
         
-    def info(self):
-        self._info(['ifs', 'moslr', 'moshr'])
+    def info(self, ins=None, full=False):
+        if ins is None:
+            self._info(['ifs', 'moslr', 'moshr'], full=full)
+        else:
+            self._info([ins], full=full)
                 
            
             

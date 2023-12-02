@@ -72,7 +72,7 @@ def test_cont_ps():
     # ------------------
     
     spec = wst.get_spec(mos, dspec)
-    spec = spec.subspec(lmin=7000,lmax=7050)
+    spec = spec.subspec(lmin=7300,lmax=7350)
     
     obs = dict(
         moon = 'darksky',
@@ -93,11 +93,11 @@ def test_cont_ps():
     assert nspaxels[0] == nspaxels[-1]
     
     # ---------------
-    wave,dw  = 7200,500
+    wave,dw  = 7500,500
     dspec = dict(type='template', name='ref/sun', 
                  wave_center=wave, wave_width=dw)
     spec = wst.get_spec(ifs, dspec)
-    spec = spec.subspec(lmin=7000,lmax=7300)
+    spec = spec.subspec(lmin=7400,lmax=7700)
     mag = 23
     flux = mag2flux(mag, wave)
     obs = dict(

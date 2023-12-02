@@ -52,7 +52,7 @@ class ETC:
         self.logger.setLevel(log)
 
 
-    def _info(self, ins_names):
+    def _info(self, ins_names, full=False):
         """ print detailed information
 
         Parameters
@@ -60,10 +60,10 @@ class ETC:
         ins_names : list of str
                list of instrument names (e.g ['ifs','moslr'])
 
-        """
-        self.logger.info('%s ETC version: %s', self.name, self.version)        
+        """  
+        self.logger.info('%s ETC version: %s', self.name, self.version)
         if ('desc' in self.tel) and ('version' in self.tel):
-            self.logger.info('Telescope %s version %s', self.tel['desc'],self.tel['version'])
+            self.logger.info('Telescope %s version %s', self.tel['desc'],self.tel['version'])      
         self.logger.info('Diameter: %.2f m Area: %.1f m2', self.tel['diameter'],self.tel['area'])
         for ins_name in ins_names:
             insfam = getattr(self, ins_name)
@@ -82,10 +82,11 @@ class ETC:
                                   ins['instrans'].data.max(), ins['instrans'].wave.coord(ins['instrans'].data.argmax()),
                                   ins['instrans'].data.min(), ins['instrans'].wave.coord(ins['instrans'].data.argmin()))
                 self.logger.info('\t Detector RON %.1f e- Dark %.1f e-/h', ins['ron'],ins['dcurrent'])
-                for sky in ins['sky']:
-                    self.logger.info('\t Sky moon %s airmass %s table %s', sky['moon'], sky['airmass'],
-                                      os.path.basename(sky['filename']))
-                self.logger.info('\t Instrument transmission table %s', os.path.basename(ins['instrans'].filename))
+                if full:
+                    for sky in ins['sky']:
+                        self.logger.info('\t Sky moon %s airmass %s table %s', sky['moon'], sky['airmass'],
+                                          os.path.basename(sky['filename']))
+                    self.logger.info('\t Instrument transmission table %s', os.path.basename(ins['instrans'].filename))
 
 
     def set_obs(self, obs):
@@ -173,12 +174,17 @@ class ETC:
             k = wave.pixel(dspec['wave'][1], nearest=True)
             l2 = wave.coord(k)
             npts = int((l2 - l1)/dlbda + 1.5)
-            spec = Spectrum(wave=WaveCoord(cdelt=dlbda, crval=l1), data=np.ones(npts))
+            spec = Spectrum(wave=WaveCoord(cdelt=dlbda, crval=l1), data=np.ones(npts))          
             oversamp = 1  # we do not oversamp for flatcont
         elif dspec['type'] == "template":
             # get template spectrum
             name = dspec['name']
             sp = Spextrum(name)
+            redshift = dspec.get('redshift', None)
+            # Do we want to redshift this?
+            if redshift is not None:
+                #print("Redshifting to z={0}".format(redshift))
+                sp = sp.redshift(z=redshift)           
             l0,dl = dspec['wave_center'],dspec['wave_width']
             w,y = sp._get_arrays(wavelengths=None)
             w,y = w.value,y.value
@@ -406,10 +412,8 @@ class ETC:
         """
         peak = ima.peak()
         center = (peak['p'],peak['q'])
-        if hasattr(ima, "fwhm_gauss"):
-            fwhm,_ = ima.fwhm_gauss(center=center, unit_center=None, unit_radius=None)
-        else:
-            fwhm,_ = ima.fwhm(center=center, unit_center=None, unit_radius=None)
+#        fwhm,_ = ima.fwhm_gauss(center=center, unit_center=None, unit_radius=None)
+        fwhm,_ = ima.fwhm(center=center, unit_center=None, unit_radius=None)
         rad = kfwhm*fwhm*ins['spaxel_size']/ima.oversamp
         tima,nspaxels,size_ima,frac_ima = self.fixed_circular_aperture(ins, ima, rad)
         return tima,nspaxels,size_ima,frac_ima
@@ -657,7 +661,9 @@ class ETC:
             result dictionary (see documentation)
 
          """
+        global g_frac_ima,g_size_ima,g_nspaxels
 
+        
         obs = self.obs
         usedobs = {}
         _checkobs(obs, usedobs, ['moon','dit','ndit','airmass','spec_type','ima_type'])
@@ -864,6 +870,11 @@ class ETC:
         res['cube']['trunc_spec'] = tspec
         if is_ps and is_line: # set ima_type back to ps
             obs['ima_type'] = 'ps'
+
+
+        # Update globals added JB
+        g_frac_ima,g_size_ima,g_nspaxels = frac_ima,size_ima,nspaxels
+            
         return res
 
     def snr_from_cube(self, ins, cube):
@@ -894,9 +905,9 @@ class ETC:
         ins_atm = sky_abs.subspec(lmin=cube.wave.get_start(), lmax=cube.wave.get_end())
         spaxel_area = ins['spaxel_size']**2
         area = spaxel_area
-        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         dl = cube.wave.get_step(unit='Angstrom')
         w = cube.wave.coord() # wavelength in A
+        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         a = (w*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
         Kt =  ins_ins * a
         nph_source = cube.copy()
@@ -1003,10 +1014,10 @@ class ETC:
         ins_ins = ins['instrans'].subspec(lmin=spec.wave.get_start(), lmax=spec.wave.get_end())
         ins_atm = sky_abs.subspec(lmin=spec.wave.get_start(), lmax=spec.wave.get_end())
         spaxel_area = ins['spaxel_size']**2
-        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         area = spaxel_area
         dl = spec.wave.get_step(unit='Angstrom')
         w = spec.wave.coord() # wavelength in A
+        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         a = (w*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
         Kt =  ins_ins * a
         nph_source = spec.copy()
@@ -1060,9 +1071,9 @@ class ETC:
         ins_atm = sky_abs.subspec(lmin=spec.wave.get_start(), lmax=spec.wave.get_end())
         spaxel_area = ins['spaxel_size']**2
         area = spaxel_area
-        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         dl = spec.wave.get_step(unit='Angstrom')
         w = spec.wave.coord() # wavelength in A
+        tel_eff_area = self.tel['area'] * (1 - ins.get('obscuration', 0)) # telescope effective area
         a = (w*1.e-8/(H_cgs*C_cgs)) * (tel_eff_area*1.e4) * (ins_atm.data)
         Kt =  ins_ins * a
         nph_source = spec.copy()
@@ -1292,7 +1303,7 @@ class ETC:
 
         for key in res[0]['aper'].keys():
             d = dict(item=key)
-            if isinstance(res[0]['aper'][key], (float, np.float32, np.float64, np.float128)):
+            if isinstance(res[0]['aper'][key], (float, np.float64)):
                 for n,r in zip(names,res):
                     d[n] = f"{r['aper'][key]:5.4g}"
             else:
@@ -1638,7 +1649,7 @@ def get_data(obj, chan, name, refdir):
         moons.append(moon)
         airmass = float(f[3][:-5])
         d = dict(moon=moon, airmass=airmass)
-        tab = Table.read(fname)
+        tab = Table.read(fname, unit_parse_strict="silent")
         for key,val in [['LSFPIX',ins['lsfpix']],
                          ['LBDA1',ins['lbda1']],
                          ['LBDA2',ins['lbda2']],
@@ -1662,9 +1673,18 @@ def get_data(obj, chan, name, refdir):
         d['filename'] = fname
         ins['sky'].append(d)
     filename = f'{name}_{chan}_noatm.fits'
-    trans=Table.read(os.path.join(refdir,filename))
+
+#    print("I am loading {0}".format(filename))
+#    exit()
+    trans=Table.read(os.path.join(refdir,filename), unit_parse_strict="silent")
     if trans['WAVE'][0]*10 > ins['lbda1'] or \
        trans['WAVE'][-1]*10 < ins['lbda2'] :
+
+        print("Transmission goes from {0} to {1}".format(trans['WAVE'][0],
+                                                         trans['WAVE'][-1]))
+        print("While lbda1={0} and lbda2={1}".format(ins['lbda1'],
+                                                     ins['lbda2']))
+        
         raise ValueError(f'Incompatible bounds between {filename} and setup')
     ins['instrans'] = Spectrum(data=np.interp(ins['sky'][0]['emi'].wave.coord(),trans['WAVE']*10,trans['TOT']),
                                                 wave=ins['sky'][0]['emi'].wave)
