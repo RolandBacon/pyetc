@@ -1,5 +1,6 @@
 Changelog
 =========
+
 0.30 (2/12/2023)
 ----------------
 - use different obscuration for the MOS and the IFS
@@ -9,6 +10,7 @@ Changelog
 - updated tutorial to refelect the change
 
 0.22 (14/10/2023)
+-----------------
 - Correct ima.fwhm_gauss for older version of mpdaf
 - remove np.float (deprecated in new numpy version)
 
