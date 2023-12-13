@@ -77,18 +77,18 @@ class WST(ETC):
         # MOS-LR blue channel 
         chan = self.moslr['channels'][0]
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput',
-                                version = '0.2 30/11/2023',
+                                version = '0.21 13/12/2023',
                                 ref = 'throughput version revised by Jarle & Roelof',
                                 type = 'MOS',
                                 obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
-                                aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.41, # Angstroem/pixel
+                                aperture = 1.2, # fiber diameter in arcsec
+                                dlbda = 0.27, # Angstroem/pixel
                                 lbda1 = 3700, # starting wavelength in Angstroem - we hope to go to 3500
                                 lbda2 = 5350, # end wavelength in Angstroem
-                                lsfpix = 4.1, # LSF in spectel
+                                lsfpix = 5.9, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
@@ -98,18 +98,18 @@ class WST(ETC):
         # MOS-LR orange channel      
         chan = self.moslr['channels'][1] 
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput',
-                                version = '0.2 30/11/2023',
+                                version = '0.21 13/12/2023',
                                 ref = 'throughput version revised by Jarle & Roelof',
                                 type = 'MOS',
                                 obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
-                                aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.55, # Angstroem/pixel
+                                aperture = 1.2, # fiber diameter in arcsec
+                                dlbda = 0.37, # Angstroem/pixel
                                 lbda1 = 5150, # starting wavelength in Angstroem
                                 lbda2 = 7400, # end wavelength in Angstroem
-                                lsfpix = 4.1, # LSF in spectel
+                                lsfpix = 5.9, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
@@ -120,18 +120,18 @@ class WST(ETC):
         # MOS-LR red channel      
         chan = self.moslr['channels'][2] 
         self.moslr[chan] = dict(desc='Inspired from 4MOST LR throughput',
-                                version = '0.2 30/11/2023',
+                                version = '0.21 13/12/2023',
                                 ref = 'throughput version revised by Jarle & Roelof',
                                 type = 'MOS',
                                 obscuration=MOS_OBSCURATION, # MOS telescope obscuration,
                                 iq_fwhm = 0.30, # fwhm PSF of telescope + instrument
                                 iq_beta = 2.50, # beta PSF of telescope + instrument
                                 spaxel_size = 0.25, # spaxel size in arcsec
-                                aperture = 1.0, # fiber diameter in arcsec
-                                dlbda = 0.61, # Angstroem/pixel
+                                aperture = 1.2, # fiber diameter in arcsec
+                                dlbda = 0.41, # Angstroem/pixel
                                 lbda1 = 7200, # starting wavelength in Angstroem
                                 lbda2 = 9700, # end wavelength in Angstroem
-                                lsfpix = 4.1, # LSF in spectel
+                                lsfpix = 5.9, # LSF in spectel
                                 ron = 3.0, # readout noise (e-)
                                 dcurrent = 3.0, # dark current (e-/pixel/h)                                
                                 )
